@@ -17,14 +17,16 @@ type
   end;
 
 procedure InitBinaryImg(var BI: TBinaryImage; newN, newM: word);
-procedure InitGSImg(var GSI: TGreyscaleImage; newN, newM: word);
-procedure LoadGSIFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap);
 function SaveBinaryImgToBitMap(BI: TBinaryImage): TBitMap;
 function ImgAND(BI1, BI2: TBinaryImage): TBinaryImage;
 function ImgOR(BI1, BI2: TBinaryImage): TBinaryImage;
 function ImgNOT(BI: TBinaryImage): TBinaryImage;
 function ImgXOR(BI1, BI2: TBinaryImage): TBinaryImage;
 function ImgEquals(Img1, Img2: TBinaryImage): boolean;
+
+procedure InitGSImg(var GSI: TGreyscaleImage; newN, newM: word);
+procedure LoadGSIFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap);
+procedure LoadChannelFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap; channel: byte);
 
 implementation
 
@@ -58,12 +60,37 @@ end;
 
 procedure LoadGSIFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap);
 var
-  I, j: word;
+  i, j: word;
 begin
   InitGSImg(GSI, BM.Height, BM.Width);
-  for I := 1 to GSI.N do
+  for i := 1 to GSI.N do
     for j := 1 to GSI.M do
-      GSI.I[I, j] := BM.Canvas.Pixels[j, I];
+      GSI.I[i, j] := BM.Canvas.Pixels[j-1, i-1];
+end;
+
+procedure LoadChannelFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap; channel: byte);
+  procedure TColorToRGB(Color: TColor; var r, g, b: byte);
+  begin
+    r := Color;
+    g := Color shr 8;
+    b := Color shr 16;
+  end;
+
+var
+  i, j: word;
+  r, g, b: byte;
+begin
+  InitGSImg(GSI, BM.Height, BM.Width);
+  for i := 1 to GSI.N do
+    for j := 1 to GSI.M do
+    begin
+      TColorToRGB(BM.Canvas.Pixels[j-1, i-1], r, g, b);
+      case channel of
+      1: GSI.I[i, j] := r;
+      2: GSI.I[i, j] := g;
+      3: GSI.I[i, j] := b;
+      end;
+    end;
 end;
 
 function SaveBinaryImgToBitMap(BI: TBinaryImage): TBitMap;

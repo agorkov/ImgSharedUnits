@@ -25,10 +25,14 @@ function ImgXOR(BI1, BI2: TBinaryImage): TBinaryImage;
 function ImgEquals(Img1, Img2: TBinaryImage): boolean;
 
 procedure InitGSImg(var GSI: TGreyscaleImage; newN, newM: word);
+function SaveGreyscaleImgToBitMap(GSI: TGreyscaleImage): TBitMap;
 procedure LoadGSIFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap);
 procedure LoadChannelFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap; channel: byte);
 
 implementation
+
+uses
+  UPixelConvert;
 
 procedure InitBinaryImg(var BI: TBinaryImage; newN, newM: word);
 var
@@ -60,12 +64,12 @@ end;
 
 procedure LoadGSIFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap);
 var
-  i, j: word;
+  I, j: word;
 begin
   InitGSImg(GSI, BM.Height, BM.Width);
-  for i := 1 to GSI.N do
+  for I := 1 to GSI.N do
     for j := 1 to GSI.M do
-      GSI.I[i, j] := BM.Canvas.Pixels[j-1, i-1];
+      GSI.I[I, j] := BM.Canvas.Pixels[j - 1, I - 1];
 end;
 
 procedure LoadChannelFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap; channel: byte);
@@ -77,18 +81,18 @@ procedure LoadChannelFromBitMap(var GSI: TGreyscaleImage; BM: TBitMap; channel: 
   end;
 
 var
-  i, j: word;
+  I, j: word;
   r, g, b: byte;
 begin
   InitGSImg(GSI, BM.Height, BM.Width);
-  for i := 1 to GSI.N do
+  for I := 1 to GSI.N do
     for j := 1 to GSI.M do
     begin
-      TColorToRGB(BM.Canvas.Pixels[j-1, i-1], r, g, b);
+      TColorToRGB(BM.Canvas.Pixels[j - 1, I - 1], r, g, b);
       case channel of
-      1: GSI.I[i, j] := r;
-      2: GSI.I[i, j] := g;
-      3: GSI.I[i, j] := b;
+      1: GSI.I[I, j] := r;
+      2: GSI.I[I, j] := g;
+      3: GSI.I[I, j] := b;
       end;
     end;
 end;
@@ -108,6 +112,20 @@ begin
       else
         BM.Canvas.Pixels[j - 1, I - 1] := clWhite;
   SaveBinaryImgToBitMap := BM;
+end;
+
+function SaveGreyscaleImgToBitMap(GSI: TGreyscaleImage): TBitMap;
+var
+  I, j: word;
+  BM: TBitMap;
+begin
+  BM := TBitMap.Create;
+  BM.Height := GSI.N - 1;
+  BM.Width := GSI.M - 1;
+  for I := 1 to GSI.N do
+    for j := 1 to GSI.M do
+      BM.Canvas.Pixels[j - 1, I - 1] := UPixelConvert.RGBToColor(GSI.I[I, j] / 255, GSI.I[I, j] / 255, GSI.I[I, j] / 255);
+  SaveGreyscaleImgToBitMap := BM;
 end;
 
 function ImgAND(BI1, BI2: TBinaryImage): TBinaryImage;

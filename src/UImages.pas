@@ -120,8 +120,8 @@ var
   BM: TBitMap;
 begin
   BM := TBitMap.Create;
-  BM.Height := GSI.N - 1;
-  BM.Width := GSI.M - 1;
+  BM.Height := GSI.N;
+  BM.Width := GSI.M;
   for I := 1 to GSI.N do
     for j := 1 to GSI.M do
       BM.Canvas.Pixels[j - 1, I - 1] := UPixelConvert.RGBToColor(GSI.I[I, j] / 255, GSI.I[I, j] / 255, GSI.I[I, j] / 255);

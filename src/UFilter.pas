@@ -16,8 +16,9 @@ procedure LaplaceFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SobelFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure PrevittFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
-procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: integer);
-procedure LogTransform(var GSI: TGreyscaleImage; var c: integer);
+procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: double);
+procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
+procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
 
 implementation
 
@@ -504,7 +505,7 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
-procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: integer);
+procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: double);
 var
   i, j: word;
   val: double;
@@ -521,7 +522,7 @@ begin
     end;
 end;
 
-procedure LogTransform(var GSI: TGreyscaleImage; var k, b: integer);
+procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
 var
   i, j: word;
   val: double;
@@ -529,7 +530,24 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
     begin
-      val := c * log2(GSI.i[i, j]);
+      val := c * log2(GSI.i[i, j] + 1);
+      if val > 255 then
+        val := 255;
+      if val < 0 then
+        val := 0;
+      GSI.i[i, j] := round(val);
+    end;
+end;
+
+procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
+var
+  i, j: word;
+  val: double;
+begin
+  for i := 1 to GSI.N do
+    for j := 1 to GSI.M do
+    begin
+      val := c * power(GSI.i[i, j], gamma);
       if val > 255 then
         val := 255;
       if val < 0 then

@@ -16,6 +16,7 @@ procedure LaplaceFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SobelFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure PrevittFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
+procedure LinearTransform(var GSI: TGreyscaleImage; var k,b: integer);
 
 implementation
 
@@ -23,7 +24,7 @@ uses
   Math;
 
 const
-  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((0, 1, 0), (1, -4, 1), (0, 1, 0));
+  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
 
   SobelMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2), (-1, 0, 1));
   SobelMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0), (-1, -2, -1));
@@ -390,7 +391,7 @@ begin
         for fj := -1 to 1 do
           response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] * GetPixelValue(GSI, i + fi, j + fj);
       if AddToOriginal then
-        response := GSI.i[i, j] - response;
+        response := round(1.7*GSI.i[i, j] - response);
       if response > 255 then
         GSIR.i[i, j] := 255;
       if response < 0 then
@@ -500,6 +501,23 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure LinearTransform(var GSI: TGreyscaleImage; var k,b: integer);
+var
+  i, j: word;
+  val: double;
+begin
+  for i := 1 to GSI.N do
+    for j := 1 to GSI.M do
+    begin
+      val := k * GSI.i[i, j] + b;
+      if val > 255 then
+        val := 255;
+      if val < 0 then
+        val := 0;
+      GSI.i[i, j] :=round(val);
+    end;
 end;
 
 end.

@@ -19,6 +19,7 @@ procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: double);
 procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
 procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
+procedure HistogramEqualization(var GSI: TGreyscaleImage);
 
 implementation
 
@@ -393,7 +394,7 @@ begin
         for fj := -1 to 1 do
           response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] * GetPixelValue(GSI, i + fi, j + fj);
       if AddToOriginal then
-        response := round(1.7 * GSI.i[i, j] - response);
+        response := round(GSI.i[i, j] - response);
       if response > 255 then
         GSIR.i[i, j] := 255;
       if response < 0 then
@@ -554,6 +555,27 @@ begin
         val := 0;
       GSI.i[i, j] := round(val);
     end;
+end;
+
+procedure HistogramEqualization(var GSI: TGreyscaleImage);
+var
+  h: array [0 .. 255] of double;
+  q, sum: LongWord;
+  i, j: word;
+begin
+  for i := 0 to 255 do
+    h[i] := 0;
+  for i := 1 to GSI.N do
+    for j := 1 to GSI.M do
+      h[GSI.i[i, j]] := h[GSI.i[i, j]] + 1;
+  for i := 0 to 255 do
+    h[i] := h[i] / (GSI.N * GSI.M);
+  for i := 1 to 255 do
+    h[i] := h[i - 1] + h[i];
+
+  for i := 1 to GSI.N do
+    for j := 1 to GSI.M do
+      GSI.i[i, j] := round(255 * h[GSI.i[i, j]]);
 end;
 
 end.

@@ -16,10 +16,27 @@ procedure LaplaceFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SobelFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure PrevittFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
-procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: double);
+procedure LinearTransform(var GSI: TGreyscaleImage; k, b: double);
 procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
 procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
 procedure HistogramEqualization(var GSI: TGreyscaleImage);
+
+procedure RGBAVGFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBWeightedAVGFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBGeometricMeanFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBMedianFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBMaxFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBMinFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBMiddlePointFilter(var RGBI: TRGBImage; h, w: word);
+procedure RGBTruncatedAVGFilter(var RGBI: TRGBImage; h, w, d: word);
+procedure RGBLaplaceFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+procedure RGBSobelFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+procedure RGBPrevittFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+procedure RGBSharrFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+procedure RGBLinearTransform(var RGBI: TRGBImage; k, b: double);
+procedure RGBLogTransform(var RGBI: TRGBImage; var c: double);
+procedure RGBGammaTransform(var RGBI: TRGBImage; var c, gamma: double);
+procedure RGBHistogramEqualization(var RGBI: TRGBImage);
 
 implementation
 
@@ -77,6 +94,13 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
+procedure RGBAVGFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  AVGFilter(RGBI.R, h, w);
+  AVGFilter(RGBI.G, h, w);
+  AVGFilter(RGBI.b, h, w);
+end;
+
 procedure WeightedAVGFilter(var GSI: TGreyscaleImage; h, w: word);
 var
   i, j: integer;
@@ -120,6 +144,13 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
+procedure RGBWeightedAVGFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  WeightedAVGFilter(RGBI.R, h, w);
+  WeightedAVGFilter(RGBI.G, h, w);
+  WeightedAVGFilter(RGBI.b, h, w);
+end;
+
 procedure GeometricMeanFilter(var GSI: TGreyscaleImage; h, w: word);
 var
   i, j: word;
@@ -146,42 +177,49 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
-function FindMedian(N: word; var Arr: array of byte): byte;
-var
-  L, R, k, i, j: word;
-  w, x: byte;
+procedure RGBGeometricMeanFilter(var RGBI: TRGBImage; h, w: word);
 begin
-  L := 1;
-  R := N;
-  k := (N div 2) + 1;
-  while L < R - 1 do
-  begin
-    x := Arr[k];
-    i := L;
-    j := R;
-    repeat
-      while Arr[i] < x do
-        i := i + 1;
-      while x < Arr[j] do
-        j := j - 1;
-      if i <= j then
-      begin
-        w := Arr[i];
-        Arr[i] := Arr[j];
-        Arr[j] := w;
-        i := i + 1;
-        j := j - 1;
-      end;
-    until i > j;
-    if j < k then
-      L := i;
-    if k < i then
-      R := j;
-  end;
-  FindMedian := Arr[k];
+  GeometricMeanFilter(RGBI.R, h, w);
+  GeometricMeanFilter(RGBI.G, h, w);
+  GeometricMeanFilter(RGBI.b, h, w);
 end;
 
 procedure MedianFilter(var GSI: TGreyscaleImage; h, w: word);
+  function FindMedian(N: word; var Arr: array of byte): byte;
+  var
+    L, R, k, i, j: word;
+    w, x: byte;
+  begin
+    L := 1;
+    R := N;
+    k := (N div 2) + 1;
+    while L < R - 1 do
+    begin
+      x := Arr[k];
+      i := L;
+      j := R;
+      repeat
+        while Arr[i] < x do
+          i := i + 1;
+        while x < Arr[j] do
+          j := j - 1;
+        if i <= j then
+        begin
+          w := Arr[i];
+          Arr[i] := Arr[j];
+          Arr[j] := w;
+          i := i + 1;
+          j := j - 1;
+        end;
+      until i > j;
+      if j < k then
+        L := i;
+      if k < i then
+        R := j;
+    end;
+    FindMedian := Arr[k];
+  end;
+
 var
   i, j: word;
   fi, fj: integer;
@@ -211,6 +249,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure RGBMedianFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  MedianFilter(RGBI.R, h, w);
+  MedianFilter(RGBI.G, h, w);
+  MedianFilter(RGBI.b, h, w);
 end;
 
 procedure MaxFilter(var GSI: TGreyscaleImage; h, w: word);
@@ -250,6 +295,13 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
+procedure RGBMaxFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  MaxFilter(RGBI.R, h, w);
+  MaxFilter(RGBI.G, h, w);
+  MaxFilter(RGBI.b, h, w);
+end;
+
 procedure MinFilter(var GSI: TGreyscaleImage; h, w: word);
 var
   i, j: word;
@@ -285,6 +337,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure RGBMinFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  MinFilter(RGBI.R, h, w);
+  MinFilter(RGBI.G, h, w);
+  MinFilter(RGBI.b, h, w);
 end;
 
 procedure MiddlePointFilter(var GSI: TGreyscaleImage; h, w: word);
@@ -327,6 +386,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure RGBMiddlePointFilter(var RGBI: TRGBImage; h, w: word);
+begin
+  MiddlePointFilter(RGBI.R, h, w);
+  MiddlePointFilter(RGBI.G, h, w);
+  MiddlePointFilter(RGBI.b, h, w);
 end;
 
 procedure TruncatedAVGFilter(var GSI: TGreyscaleImage; h, w, d: word);
@@ -374,6 +440,13 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
+procedure RGBTruncatedAVGFilter(var RGBI: TRGBImage; h, w, d: word);
+begin
+  TruncatedAVGFilter(RGBI.R, h, w, d);
+  TruncatedAVGFilter(RGBI.G, h, w, d);
+  TruncatedAVGFilter(RGBI.b, h, w, d);
+end;
+
 procedure LaplaceFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 var
   i, j: integer;
@@ -405,6 +478,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure RGBLaplaceFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+begin
+  LaplaceFilter(RGBI.R, AddToOriginal);
+  LaplaceFilter(RGBI.G, AddToOriginal);
+  LaplaceFilter(RGBI.b, AddToOriginal);
 end;
 
 procedure SobelFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
@@ -440,6 +520,13 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
+procedure RGBSobelFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+begin
+  SobelFilter(RGBI.R, AddToOriginal);
+  SobelFilter(RGBI.G, AddToOriginal);
+  SobelFilter(RGBI.b, AddToOriginal);
+end;
+
 procedure PrevittFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 var
   i, j: integer;
@@ -471,6 +558,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := GSIR.i[i, j];
+end;
+
+procedure RGBPrevittFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+begin
+  PrevittFilter(RGBI.R, AddToOriginal);
+  PrevittFilter(RGBI.G, AddToOriginal);
+  PrevittFilter(RGBI.b, AddToOriginal);
 end;
 
 procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
@@ -506,7 +600,14 @@ begin
       GSI.i[i, j] := GSIR.i[i, j];
 end;
 
-procedure LinearTransform(var GSI: TGreyscaleImage; var k, b: double);
+procedure RGBSharrFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
+begin
+  SharrFilter(RGBI.R, AddToOriginal);
+  SharrFilter(RGBI.G, AddToOriginal);
+  SharrFilter(RGBI.b, AddToOriginal);
+end;
+
+procedure LinearTransform(var GSI: TGreyscaleImage; k, b: double);
 var
   i, j: word;
   val: double;
@@ -521,6 +622,13 @@ begin
         val := 0;
       GSI.i[i, j] := round(val);
     end;
+end;
+
+procedure RGBLinearTransform(var RGBI: TRGBImage; k, b: double);
+begin
+  LinearTransform(RGBI.R, k, b);
+  LinearTransform(RGBI.G, k, b);
+  LinearTransform(RGBI.b, k, b);
 end;
 
 procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
@@ -540,6 +648,13 @@ begin
     end;
 end;
 
+procedure RGBLogTransform(var RGBI: TRGBImage; var c: double);
+begin
+  LogTransform(RGBI.R, c);
+  LogTransform(RGBI.G, c);
+  LogTransform(RGBI.b, c);
+end;
+
 procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
 var
   i, j: word;
@@ -555,6 +670,13 @@ begin
         val := 0;
       GSI.i[i, j] := round(val);
     end;
+end;
+
+procedure RGBGammaTransform(var RGBI: TRGBImage; var c, gamma: double);
+begin
+  GammaTransform(RGBI.R, c, gamma);
+  GammaTransform(RGBI.G, c, gamma);
+  GammaTransform(RGBI.b, c, gamma);
 end;
 
 procedure HistogramEqualization(var GSI: TGreyscaleImage);
@@ -576,6 +698,13 @@ begin
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := round(255 * h[GSI.i[i, j]]);
+end;
+
+procedure RGBHistogramEqualization(var RGBI: TRGBImage);
+begin
+  HistogramEqualization(RGBI.R);
+  HistogramEqualization(RGBI.G);
+  HistogramEqualization(RGBI.b);
 end;
 
 end.

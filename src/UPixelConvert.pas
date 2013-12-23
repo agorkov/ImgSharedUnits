@@ -7,12 +7,17 @@ uses
 
 procedure TColorToRGB(Color: TColor; var r, g, b: double);
 function RGBToColor(r, g, b: double): TColor;
+
 procedure RGBToCMYK(r, g, b: double; var C, M, Y, K: double);
 procedure CMYKToRGB(var r, g, b: double; C, M, Y, K: double);
+
 procedure RGBToHSI(r, g, b: double; var H, S, I: double);
 procedure HSIToRGB(var r, g, b: double; H, S, I: double);
+
 procedure RGBToYIQ(r, g, b: double; var Y, I, Q: double);
 procedure YIQToRGB(var r, g, b: double; Y, I, Q: double);
+
+function RGBToGS(r, g, b: double): double;
 function NormalizationByte(value: double; bits: byte): byte;
 
 implementation
@@ -227,6 +232,14 @@ begin
   r := Y + 0.956 * I + 0.621 * Q;
   g := Y - 0.272 * I - 0.647 * Q;
   b := Y - 1.107 * I + 1.706 * Q;
+end;
+
+function RGBToGS(r, g, b: double): double;
+var
+  Y, I, Q: double;
+begin
+  RGBToYIQ(r, g, b, Y, I, Q);
+  RGBToGS := Y;
 end;
 
 end.

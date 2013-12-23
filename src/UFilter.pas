@@ -116,7 +116,7 @@ begin
       GSIR.i[i, j] := GSI.i[i, j];
 
   SetLength(Mask, 2 * h + 2);
-  for i := 1 to 2 * h + 2 do
+  for i := 1 to 2 * h + 1 do
     SetLength(Mask[i], 2 * w + 2);
   for i := -h to h do
     for j := -w to w do

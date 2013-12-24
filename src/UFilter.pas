@@ -3,7 +3,7 @@ unit UFilter;
 interface
 
 uses
-  UImages;
+  UImages, VCL.Graphics;
 procedure AVGFilter(var GSI: TGreyscaleImage; h, w: word);
 procedure WeightedAVGFilter(var GSI: TGreyscaleImage; h, w: word);
 procedure GeometricMeanFilter(var GSI: TGreyscaleImage; h, w: word);
@@ -37,6 +37,8 @@ procedure RGBLinearTransform(var RGBI: TRGBImage; k, b: double);
 procedure RGBLogTransform(var RGBI: TRGBImage; var c: double);
 procedure RGBGammaTransform(var RGBI: TRGBImage; var c, gamma: double);
 procedure RGBHistogramEqualization(var RGBI: TRGBImage);
+
+function Histogram(var RGBI: TRGBImage; Channel: byte): TBitMap;
 
 implementation
 
@@ -705,6 +707,58 @@ begin
   HistogramEqualization(RGBI.R);
   HistogramEqualization(RGBI.G);
   HistogramEqualization(RGBI.b);
+end;
+
+function Histogram(var RGBI: TRGBImage; Channel: byte): TBitMap;
+var
+  BM: TBitMap;
+  h: array [0 .. 255] of LongWord;
+  Max: LongWord;
+  i, j: word;
+begin
+  Max := 0;
+  for i := 0 to 255 do
+    h[i] := 0;
+  for i := 1 to RGBI.R.N do
+    for j := 1 to RGBI.R.M do
+      case Channel of
+      1: h[RGBI.R.i[i, j]] := h[RGBI.R.i[i, j]] + 1;
+      2: h[RGBI.G.i[i, j]] := h[RGBI.G.i[i, j]] + 1;
+      3: h[RGBI.b.i[i, j]] := h[RGBI.b.i[i, j]] + 1;
+      end;
+
+  for i := 0 to 255 do
+    if h[i] > Max then
+      Max := h[i];
+
+  BM := TBitMap.Create;
+  BM.Height := 100;
+  BM.Width := 256;
+  case Channel of
+  1:
+    begin
+      BM.Canvas.Pen.Color := clRed;
+      BM.Canvas.Brush.Color := clRed;
+    end;
+  2:
+    begin
+      BM.Canvas.Pen.Color := clGreen;
+      BM.Canvas.Brush.Color := clGreen;
+    end;
+  3:
+    begin
+      BM.Canvas.Pen.Color := clBlue;
+      BM.Canvas.Brush.Color := clBlue;
+    end;
+  end;
+
+  BM.Canvas.Brush.Style := bsSolid;
+  for i := 0 to 255 do
+  begin
+    BM.Canvas.MoveTo(i, BM.Height);
+    BM.Canvas.LineTo(i, BM.Height - round(h[i] * 100 / Max));
+  end;
+  Histogram := BM;
 end;
 
 end.

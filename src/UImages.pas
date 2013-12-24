@@ -226,7 +226,7 @@ begin
   InitGSImg(GSI, RGBI.R.N, RGBI.R.M);
   for I := 1 to GSI.N do
     for j := 1 to GSI.M do
-      GSI.I[I, j] := round(UPixelConvert.RGBToGS(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255, RGBI.B.I[I, j] / 255));
+      GSI.I[I, j] := round(255*UPixelConvert.RGBToGS(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255, RGBI.B.I[I, j] / 255));
   ConvertRGBIToGSI := GSI;
 end;
 

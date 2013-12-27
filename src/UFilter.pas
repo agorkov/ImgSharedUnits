@@ -17,8 +17,8 @@ procedure SobelFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure PrevittFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure SharrFilter(var GSI: TGreyscaleImage; AddToOriginal: boolean);
 procedure LinearTransform(var GSI: TGreyscaleImage; k, b: double);
-procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
-procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
+procedure LogTransform(var GSI: TGreyscaleImage; c: double);
+procedure GammaTransform(var GSI: TGreyscaleImage; c, gamma: double);
 procedure HistogramEqualization(var GSI: TGreyscaleImage);
 
 procedure RGBAVGFilter(var RGBI: TRGBImage; h, w: word);
@@ -34,8 +34,8 @@ procedure RGBSobelFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
 procedure RGBPrevittFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
 procedure RGBSharrFilter(var RGBI: TRGBImage; AddToOriginal: boolean);
 procedure RGBLinearTransform(var RGBI: TRGBImage; k, b: double);
-procedure RGBLogTransform(var RGBI: TRGBImage; var c: double);
-procedure RGBGammaTransform(var RGBI: TRGBImage; var c, gamma: double);
+procedure RGBLogTransform(var RGBI: TRGBImage; c: double);
+procedure RGBGammaTransform(var RGBI: TRGBImage; c, gamma: double);
 procedure RGBHistogramEqualization(var RGBI: TRGBImage);
 
 function Histogram(var RGBI: TRGBImage; Channel: byte): TBitMap;
@@ -633,7 +633,7 @@ begin
   LinearTransform(RGBI.b, k, b);
 end;
 
-procedure LogTransform(var GSI: TGreyscaleImage; var c: double);
+procedure LogTransform(var GSI: TGreyscaleImage; c: double);
 var
   i, j: word;
   val: double;
@@ -650,14 +650,14 @@ begin
     end;
 end;
 
-procedure RGBLogTransform(var RGBI: TRGBImage; var c: double);
+procedure RGBLogTransform(var RGBI: TRGBImage; c: double);
 begin
   LogTransform(RGBI.R, c);
   LogTransform(RGBI.G, c);
   LogTransform(RGBI.b, c);
 end;
 
-procedure GammaTransform(var GSI: TGreyscaleImage; var c, gamma: double);
+procedure GammaTransform(var GSI: TGreyscaleImage; c, gamma: double);
 var
   i, j: word;
   val: double;
@@ -674,7 +674,7 @@ begin
     end;
 end;
 
-procedure RGBGammaTransform(var RGBI: TRGBImage; var c, gamma: double);
+procedure RGBGammaTransform(var RGBI: TRGBImage; c, gamma: double);
 begin
   GammaTransform(RGBI.R, c, gamma);
   GammaTransform(RGBI.G, c, gamma);
@@ -694,9 +694,9 @@ begin
       h[GSI.i[i, j]] := h[GSI.i[i, j]] + 1;
   for i := 0 to 255 do
     h[i] := h[i] / (GSI.N * GSI.M);
+
   for i := 1 to 255 do
     h[i] := h[i - 1] + h[i];
-
   for i := 1 to GSI.N do
     for j := 1 to GSI.M do
       GSI.i[i, j] := round(255 * h[GSI.i[i, j]]);

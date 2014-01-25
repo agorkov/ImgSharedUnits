@@ -3,7 +3,7 @@ unit UBinarization;
 interface
 
 uses
-  VCL.Graphics, UImages;
+  VCL.Graphics, UGrayscaleImages, UBinaryImages;
 
 function ThresoldBinarization(GSI: TGreyscaleImage; Thresold: byte): TBinaryImage;
 function BernsenBinarization(GSI: TGreyscaleImage; r,ContrastThresold: byte): TBinaryImage;

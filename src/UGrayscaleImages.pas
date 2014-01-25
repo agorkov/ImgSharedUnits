@@ -1,13 +1,63 @@
-unit UImages;
+unit UGrayscaleImages;
 
 interface
 
+uses
+  VCL.Graphics, UBinaryImages;
+
+type
+  TGreyscaleImage = record
+    I: array of array of byte;
+    N, M: word;
+  end;
+
+  TCenter = record
+    cx, cy: word;
+  end;
+
+  TACenters = array of TCenter;
+
+procedure InitGSImg(var GSI: TGreyscaleImage; newN, newM: word);
+function SaveGreyscaleImgToBitMap(GSI: TGreyscaleImage): TBitMap;
+function MarkBinaryImage(BI: TBinaryImage): TGreyscaleImage;
+function SaveMarkedImgToBitMap(GSI: TGreyscaleImage): TBitMap;
+procedure FindCenter(MI: TGreyscaleImage; var C: TCenter; mark: word);
+function FindCenters(MI: TGreyscaleImage): TACenters;
+
 implementation
 
+uses
+  UPixelConvert, UMorphology;
 
+procedure InitGSImg(var GSI: TGreyscaleImage; newN, newM: word);
+var
+  I, j: word;
+begin
+  GSI.N := newN;
+  GSI.M := newM;
+  SetLength(GSI.I, GSI.N + 1);
+  for I := 1 to GSI.N do
+    SetLength(GSI.I[I], GSI.M + 1);
+  for I := 1 to GSI.N do
+    for j := 1 to GSI.M do
+      GSI.I[I, j] := 0;
+end;
 
+function SaveGreyscaleImgToBitMap(GSI: TGreyscaleImage): TBitMap;
+var
+  I, j: word;
+  BM: TBitMap;
+begin
+  BM := TBitMap.Create;
+  BM.Height := GSI.N;
+  BM.Width := GSI.M;
+  for I := 1 to GSI.N do
+    for j := 1 to GSI.M do
+      BM.Canvas.Pixels[j - 1, I - 1] := UPixelConvert.RGBToColor(GSI.I[I, j] / 255, GSI.I[I, j] / 255, GSI.I[I, j] / 255);
+  SaveGreyscaleImgToBitMap := BM;
+end;
 
-{function MarkBinaryImage(BI: TBinaryImage): TGreyscaleImage;
+function MarkBinaryImage(BI: TBinaryImage): TGreyscaleImage;
   procedure RecursiveMark(var GSI: TGreyscaleImage; row, col: word; mark: word);
   begin
     GSI.I[row, col] := mark;
@@ -130,8 +180,6 @@ begin
   for I := 1 to maxMark do
     FindCenter(MI, Centers[I], I);
   FindCenters := Centers;
-end;}
-
-
+end;
 
 end.

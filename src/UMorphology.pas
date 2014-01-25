@@ -3,7 +3,7 @@ unit UMorphology;
 interface
 
 uses
-  UImages;
+  UBinaryImages;
 
 type
   TBinaryStructElem = record
@@ -24,7 +24,7 @@ function Skeleton(BI: TBinaryImage): TBinaryImage;
 implementation
 
 uses
-  Math, UFMain;
+  Math;
 
 function dilation(BI: TBinaryImage; StructElem: TBinaryStructElem): TBinaryImage;
 var
@@ -147,11 +147,11 @@ var
 begin
   InitBinaryImg(BIR, BI.N, BI.M);
   i := 0;
-  REPEAT
+  repeat
     BIOld := ImgOR(BIR, BIR);
     BIR := ImgOR(BIR, GetTmpK(BI, StructElem, i));
     i := i + 1;
-  UNTIL ImgEquals(BIR, BIOld);
+  until ImgEquals(BIR, BIOld);
   MorphologyCarcass := BIR;
 end;
 
@@ -261,10 +261,10 @@ function Skeleton(BI: TBinaryImage): TBinaryImage;
 var
   ImgOld: TBinaryImage;
 begin
-  REPEAT
+  repeat
     ImgOld := ImgOR(BI, BI);
     BI := Thin(BI);
-  UNTIL ImgEquals(BI, ImgOld);
+  until ImgEquals(BI, ImgOld);
   Skeleton := BI;
 end;
 

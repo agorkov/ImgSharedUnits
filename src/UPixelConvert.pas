@@ -1,245 +1,232 @@
 unit UPixelConvert;
-
+
 interface
 
 uses
   VCL.Graphics;
 
-procedure TColorToRGB(Color: TColor; var r, g, b: double);
-function RGBToColor(r, g, b: double): TColor;
+type
+  TColorSpace = (csRGB, csCMYK, csHSI, csYIQ);
 
-procedure RGBToCMYK(r, g, b: double; var C, M, Y, K: double);
-procedure CMYKToRGB(var r, g, b: double; C, M, Y, K: double);
+  TRColor = record
+    ColorSpace: TColorSpace;
+    case TColorSpace of
+    csRGB: (ccRed, ccGreen, ccBlue: double);
+    csCMYK: (ccCyan, ccMagenta, ccYellow, ccKeyColor: double);
+    csHSI: (ccHue, ccSaturation, ccIntensity: double);
+    csYIQ: (ccY, ccI, ccQ: double);
+  end;
 
-procedure RGBToHSI(r, g, b: double; var H, S, I: double);
-procedure HSIToRGB(var r, g, b: double; H, S, I: double);
-
-procedure RGBToYIQ(r, g, b: double; var Y, I, Q: double);
-procedure YIQToRGB(var r, g, b: double; Y, I, Q: double);
-
-function RGBToGS(r, g, b: double): double;
-function NormalizationByte(value: double; bits: byte): byte;
+function ColorToRGB(Color: TColor): TRColor;
+function RGBToColor(RGB: TRColor): TColor;
+function RGBToCMYK(RGB: TRColor): TRColor;
+function CMYKToRGB(CMYK: TRColor): TRColor;
+function RGBToHSI(RGB: TRColor): TRColor;
+function HSIToRGB(HSI: TRColor): TRColor;
+function RGBToYIQ(RGB: TRColor): TRColor;
+function YIQToRGB(YIQ: TRColor): TRColor;
+function RGBToGS(RGB: TRColor): double;
+function TruncateBits(value: double; bits: byte): byte;
 
 implementation
 
 uses
   Winapi.Windows, Math;
 
-function max2(a1, a2: double): double;
+function ColorToRGB(Color: TColor): TRColor;
 var
-  r: double;
+  r: TRColor;
+  tmp: byte;
 begin
-  if a1 > a2 then
-    r := a1
+  r.ColorSpace := csRGB;
+  tmp := Color;
+  r.ccRed := tmp / 255;
+  tmp := Color shr 8;
+  r.ccGreen := tmp / 255;
+  tmp := Color shr 16;
+  r.ccBlue := tmp / 255;
+  ColorToRGB := r;
+end;
+
+function RGBToColor(RGB: TRColor): TColor;
+begin
+  if RGB.ccRed > 1 then
+    RGB.ccRed := 1;
+  if RGB.ccGreen > 1 then
+    RGB.ccGreen := 1;
+  if RGB.ccBlue > 1 then
+    RGB.ccBlue := 1;
+  if RGB.ccRed < 0 then
+    RGB.ccRed := 0;
+  if RGB.ccGreen < 0 then
+    RGB.ccGreen := 0;
+  if RGB.ccBlue < 0 then
+    RGB.ccBlue := 0;
+  RGBToColor := Winapi.Windows.RGB(round(RGB.ccRed * 255), round(RGB.ccGreen * 255), round(RGB.ccBlue * 255));
+end;
+
+function RGBToCMYK(RGB: TRColor): TRColor;
+var
+  r: TRColor;
+begin
+  r.ColorSpace := csCMYK;
+  r.ccKeyColor := 1 - max(max(RGB.ccRed, RGB.ccGreen), RGB.ccBlue);
+  if r.ccKeyColor <> 1 then
+  begin
+    r.ccCyan := (1 - RGB.ccRed - r.ccKeyColor) / (1 - r.ccKeyColor);
+    r.ccMagenta := (1 - RGB.ccGreen - r.ccKeyColor) / (1 - r.ccKeyColor);
+    r.ccYellow := (1 - RGB.ccBlue - r.ccKeyColor) / (1 - r.ccKeyColor);
+  end
   else
-    r := a2;
-  max2 := r;
+  begin
+    r.ccCyan := 1;
+    r.ccMagenta := 1;
+    r.ccYellow := 1;
+  end;
+  RGBToCMYK := r;
 end;
 
-function max3(a1, a2, a3: double): double;
+function CMYKToRGB(CMYK: TRColor): TRColor;
 var
-  r: double;
+  r: TRColor;
 begin
-  r := max2(a1, a2);
-  if a3 > r then
-    r := a3;
-  max3 := r;
+  r.ColorSpace := csRGB;
+  r.ccRed := (1 - CMYK.ccCyan) * (1 - CMYK.ccKeyColor);
+  r.ccGreen := (1 - CMYK.ccMagenta) * (1 - CMYK.ccKeyColor);
+  r.ccBlue := (1 - CMYK.ccYellow) * (1 - CMYK.ccKeyColor);
+  CMYKToRGB := r;
 end;
 
-function min2(a1, a2: double): double;
+function RGBToHSI(RGB: TRColor): TRColor;
 var
-  r: double;
+  r: TRColor;
 begin
-  if a1 < a2 then
-    r := a1
+  r.ColorSpace := csHSI;
+  r.ccIntensity := (RGB.ccRed + RGB.ccGreen + RGB.ccBlue) / 3;
+  if r.ccIntensity > 0 then
+    r.ccSaturation := 1 - min(min(RGB.ccRed, RGB.ccGreen), RGB.ccBlue) / r.ccIntensity
   else
-    r := a2;
-  min2 := r;
+    r.ccSaturation := 0;
+  if r.ccSaturation <> 0 then
+  begin
+    RGB.ccRed := round(RGB.ccRed * 255);
+    RGB.ccGreen := round(RGB.ccGreen * 255);
+    RGB.ccBlue := round(RGB.ccBlue * 255);
+    if RGB.ccGreen >= RGB.ccBlue then
+      r.ccHue := RadToDeg(arccos((RGB.ccRed - RGB.ccGreen / 2 - RGB.ccBlue / 2) / sqrt(sqr(RGB.ccRed) + sqr(RGB.ccGreen) + sqr(RGB.ccBlue) - RGB.ccRed * RGB.ccGreen - RGB.ccRed * RGB.ccBlue - RGB.ccGreen * RGB.ccBlue)))
+    else
+      r.ccHue := 360 - RadToDeg(arccos((RGB.ccRed - RGB.ccGreen / 2 - RGB.ccBlue / 2) / sqrt(sqr(RGB.ccRed) + sqr(RGB.ccGreen) + sqr(RGB.ccBlue) - RGB.ccRed * RGB.ccGreen - RGB.ccRed * RGB.ccBlue - RGB.ccGreen * RGB.ccBlue)))
+  end
+  else
+    r.ccHue := 500;
+  RGBToHSI := r;
 end;
 
-function min3(a1, a2, a3: double): double;
+function HSIToRGB(HSI: TRColor): TRColor;
 var
-  r: double;
+  r: TRColor;
 begin
-  r := min2(a1, a2);
-  if a3 < r then
-    r := a3;
-  min3 := r;
+  r.ColorSpace := csRGB;
+  if HSI.ccHue = 0 then
+  begin
+    r.ccRed := HSI.ccIntensity + 2 * HSI.ccIntensity * HSI.ccSaturation;
+    r.ccGreen := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+    r.ccBlue := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+  end
+  else
+    if (0 < HSI.ccHue) and (HSI.ccHue < 120) then
+    begin
+      r.ccRed := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * cos(DegToRad(HSI.ccHue)) / cos(DegToRad(60 - HSI.ccHue));
+      r.ccGreen := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * (1 - cos(DegToRad(HSI.ccHue)) / cos(DegToRad(60 - HSI.ccHue)));
+      r.ccBlue := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+    end
+    else
+      if (HSI.ccHue = 120) then
+      begin
+        r.ccRed := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+        r.ccGreen := HSI.ccIntensity + 2 * HSI.ccIntensity * HSI.ccSaturation;
+        r.ccBlue := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+      end
+      else
+        if (120 < HSI.ccHue) and (HSI.ccHue < 240) then
+        begin
+          r.ccRed := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+          r.ccGreen := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * cos(DegToRad(HSI.ccHue - 120)) / cos(DegToRad(180 - HSI.ccHue));
+          r.ccBlue := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * (1 - cos(DegToRad(HSI.ccHue - 120)) / cos(DegToRad(180 - HSI.ccHue)));
+        end
+        else
+          if HSI.ccHue = 240 then
+          begin
+            r.ccRed := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+            r.ccGreen := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+            r.ccBlue := HSI.ccIntensity + 2 * HSI.ccIntensity * HSI.ccSaturation;
+          end
+          else
+            if (240 < HSI.ccHue) and (HSI.ccHue < 360) then
+            begin
+              r.ccRed := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * (1 - cos(DegToRad(HSI.ccHue - 240)) / cos(DegToRad(300 - HSI.ccHue)));
+              r.ccGreen := HSI.ccIntensity - HSI.ccIntensity * HSI.ccSaturation;
+              r.ccBlue := HSI.ccIntensity + HSI.ccIntensity * HSI.ccSaturation * cos(DegToRad(HSI.ccHue - 240)) / cos(DegToRad(300 - HSI.ccHue));
+            end
+            else
+              if HSI.ccHue > 360 then
+              begin
+                r.ccRed := HSI.ccIntensity;
+                r.ccGreen := HSI.ccIntensity;
+                r.ccBlue := HSI.ccIntensity;
+              end;
+  HSIToRGB := r;
 end;
 
-function NormalizationByte(value: double; bits: byte): byte;
+function RGBToYIQ(RGB: TRColor): TRColor;
+var
+  r: TRColor;
+begin
+  r.ColorSpace := csYIQ;
+  r.ccY := 0.299 * RGB.ccRed + 0.587 * RGB.ccGreen + 0.114 * RGB.ccBlue;
+  r.ccI := 0.596 * RGB.ccRed - 0.274 * RGB.ccGreen - 0.321 * RGB.ccBlue;
+  r.ccQ := 0.211 * RGB.ccRed - 0.523 * RGB.ccGreen + 0.311 * RGB.ccBlue;
+  RGBToYIQ := r;
+end;
+
+function YIQToRGB(YIQ: TRColor): TRColor;
+var
+  r: TRColor;
+begin
+  r.ColorSpace := csRGB;
+  r.ccRed := YIQ.ccY + 0.956 * YIQ.ccI + 0.621 * YIQ.ccQ;
+  r.ccGreen := YIQ.ccY - 0.272 * YIQ.ccI - 0.647 * YIQ.ccQ;
+  r.ccBlue := YIQ.ccY - 1.107 * YIQ.ccI + 1.706 * YIQ.ccQ;
+  YIQToRGB := r;
+end;
+
+function RGBToGS(RGB: TRColor): double;
+begin
+  RGBToGS := RGBToYIQ(RGB).ccY;
+end;
+
+function TruncateBits(value: double; bits: byte): byte;
 var
   StepReal: real;
   StepByte: byte;
   I: byte;
   r: byte;
 begin
-
   if value > 1 then
     value := 1;
   if value < 0 then
     value := 0;
   StepReal := 1 / (1 shl bits);
   StepByte := 256 div (1 shl bits);
-
   I := 0;
   while I * StepReal < value do
     I := I + 1;
-
   if bits < 8 then
     r := (I - 1) * StepByte + (StepByte div 2)
   else
     r := I;
-
-  NormalizationByte := r;
-end;
-
-procedure TColorToRGB(Color: TColor; var r, g, b: double);
-var
-  rb, gb, bb: byte;
-begin
-  rb := Color;
-  r := rb / 255;
-  gb := Color shr 8;
-  g := gb / 255;
-  bb := Color shr 16;
-  b := bb / 255;
-end;
-
-function RGBToColor(r, g, b: double): TColor;
-begin
-  if r > 1 then
-    r := 1;
-  if g > 1 then
-    g := 1;
-  if b > 1 then
-    b := 1;
-  if r < 0 then
-    r := 0;
-  if g < 0 then
-    g := 0;
-  if b < 0 then
-    b := 0;
-  RGBToColor := RGB(round(r * 255), round(g * 255), round(b * 255));
-end;
-
-procedure RGBToCMYK(r, g, b: double; var C, M, Y, K: double);
-begin
-  K := 1 - max3(r, g, b);
-  if K <> 1 then
-  begin
-    C := (1 - r - K) / (1 - K);
-    M := (1 - g - K) / (1 - K);
-    Y := (1 - b - K) / (1 - K);
-  end
-  else
-  begin
-    C := 1;
-    M := 1;
-    Y := 1;
-  end;
-end;
-
-procedure CMYKToRGB(var r, g, b: double; C, M, Y, K: double);
-begin
-  r := (1 - C) * (1 - K);
-  g := (1 - M) * (1 - K);
-  b := (1 - Y) * (1 - K);
-end;
-
-procedure RGBToHSI(r, g, b: double; var H, S, I: double);
-begin
-  I := (r + g + b) / 3;
-  if I > 0 then
-    S := 1 - min3(r, g, b) / I
-  else
-    S := 0;
-  if S <> 0 then
-  begin
-    r := round(r * 255);
-    g := round(g * 255);
-    b := round(b * 255);
-    if g >= b then
-      H := RadToDeg(arccos((r - g / 2 - b / 2) / sqrt(sqr(r) + sqr(g) + sqr(b) - r * g - r * b - g * b)))
-    else
-      H := 360 - RadToDeg(arccos((r - g / 2 - b / 2) / sqrt(sqr(r) + sqr(g) + sqr(b) - r * g - r * b - g * b)))
-  end
-  else
-    H := 500;
-end;
-
-procedure HSIToRGB(var r, g, b: double; H, S, I: double);
-begin
-  if H = 0 then
-  begin
-    r := I + 2 * I * S;
-    g := I - I * S;
-    b := I - I * S;
-  end
-  else
-    if (0 < H) and (H < 120) then
-    begin
-      r := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
-      g := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
-      b := I - I * S;
-    end
-    else
-      if (H = 120) then
-      begin
-        r := I - I * S;
-        g := I + 2 * I * S;
-        b := I - I * S;
-      end
-      else
-        if (120 < H) and (H < 240) then
-        begin
-          r := I - I * S;
-          g := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
-          b := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
-        end
-        else
-          if H = 240 then
-          begin
-            r := I - I * S;
-            g := I - I * S;
-            b := I + 2 * I * S;
-          end
-          else
-            if (240 < H) and (H < 360) then
-            begin
-              r := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
-              g := I - I * S;
-              b := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
-            end
-            else
-              if H > 360 then
-              begin
-                r := I;
-                g := I;
-                b := I;
-              end;
-end;
-
-procedure RGBToYIQ(r, g, b: double; var Y, I, Q: double);
-begin
-  Y := 0.299 * r + 0.587 * g + 0.114 * b;
-  I := 0.596 * r - 0.274 * g - 0.321 * b;
-  Q := 0.211 * r - 0.523 * g + 0.311 * b;
-end;
-
-procedure YIQToRGB(var r, g, b: double; Y, I, Q: double);
-begin
-  r := Y + 0.956 * I + 0.621 * Q;
-  g := Y - 0.272 * I - 0.647 * Q;
-  b := Y - 1.107 * I + 1.706 * Q;
-end;
-
-function RGBToGS(r, g, b: double): double;
-var
-  Y, I, Q: double;
-begin
-  RGBToYIQ(r, g, b, Y, I, Q);
-  RGBToGS := Y;
+  TruncateBits := r;
 end;
 
 end.
+

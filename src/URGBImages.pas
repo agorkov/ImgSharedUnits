@@ -56,26 +56,40 @@ function ConvertRGBIToGSI(const RGBI: TRGBImage): TGreyscaleImage;
 var
   GSI: TGreyscaleImage;
   I, j: word;
+  p: TColorPixel;
 begin
+  p := TColorPixel.Create;
   InitGSImg(GSI, RGBI.R.N, RGBI.R.M);
   for I := 1 to GSI.N do
     for j := 1 to GSI.M do
-      GSI.I[I, j] := round(255 * UPixelConvert.RGBToGS(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255, RGBI.B.I[I, j] / 255));
+    begin
+      p.SetRGB(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255,
+        RGBI.B.I[I, j] / 255);
+      GSI.I[I, j] := round(255 * p.GetColorChannel(ccY));
+    end;
   ConvertRGBIToGSI := GSI;
+  p.Free;
 end;
 
 function SaveRGBImgToBitMap(RGBI: TRGBImage): TBitMap;
 var
   I, j: word;
   BM: TBitMap;
+  p: TColorPixel;
 begin
+  p := TColorPixel.Create;
   BM := TBitMap.Create;
   BM.Height := RGBI.R.N;
   BM.Width := RGBI.R.M;
   for I := 1 to RGBI.R.N do
     for j := 1 to RGBI.R.M do
-      BM.Canvas.Pixels[j - 1, I - 1] := UPixelConvert.RGBToColor(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255, RGBI.B.I[I, j] / 255);
+    begin
+      p.SetRGB(RGBI.R.I[I, j] / 255, RGBI.G.I[I, j] / 255,
+        RGBI.B.I[I, j] / 255);
+      BM.Canvas.Pixels[j - 1, I - 1] := p.GetFullColor;
+    end;
   SaveRGBImgToBitMap := BM;
+  p.Free;
 end;
 
 end.

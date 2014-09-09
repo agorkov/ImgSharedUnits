@@ -47,14 +47,20 @@ function SaveGreyscaleImgToBitMap(GSI: TGreyscaleImage): TBitMap;
 var
   I, j: word;
   BM: TBitMap;
+  p: TColorPixel;
 begin
   BM := TBitMap.Create;
   BM.Height := GSI.N;
   BM.Width := GSI.M;
+  p := TColorPixel.Create;
   for I := 1 to GSI.N do
     for j := 1 to GSI.M do
-      BM.Canvas.Pixels[j - 1, I - 1] := UPixelConvert.RGBToColor(GSI.I[I, j] / 255, GSI.I[I, j] / 255, GSI.I[I, j] / 255);
+    begin
+      p.SetRGB(GSI.I[I, j] / 255, GSI.I[I, j] / 255, GSI.I[I, j] / 255);
+      BM.Canvas.Pixels[j - 1, I - 1] := p.GetFullColor;
+    end;
   SaveGreyscaleImgToBitMap := BM;
+  p.Free;
 end;
 
 function MarkBinaryImage(BI: TBinaryImage): TGreyscaleImage;
@@ -125,20 +131,34 @@ begin
         BM.Canvas.Pixels[j - 1, I - 1] := clWhite
       else
         case GSI.I[I, j] mod 14 of
-        0: BM.Canvas.Pixels[j - 1, I - 1] := clMaroon;
-        1: BM.Canvas.Pixels[j - 1, I - 1] := clGreen;
-        2: BM.Canvas.Pixels[j - 1, I - 1] := clOlive;
-        3: BM.Canvas.Pixels[j - 1, I - 1] := clNavy;
-        4: BM.Canvas.Pixels[j - 1, I - 1] := clPurple;
-        5: BM.Canvas.Pixels[j - 1, I - 1] := clTeal;
-        6: BM.Canvas.Pixels[j - 1, I - 1] := clGray;
-        7: BM.Canvas.Pixels[j - 1, I - 1] := clSilver;
-        8: BM.Canvas.Pixels[j - 1, I - 1] := clRed;
-        9: BM.Canvas.Pixels[j - 1, I - 1] := clLime;
-        10: BM.Canvas.Pixels[j - 1, I - 1] := clBlue;
-        11: BM.Canvas.Pixels[j - 1, I - 1] := clFuchsia;
-        12: BM.Canvas.Pixels[j - 1, I - 1] := clAqua;
-        13: BM.Canvas.Pixels[j - 1, I - 1] := clYellow;
+          0:
+            BM.Canvas.Pixels[j - 1, I - 1] := clMaroon;
+          1:
+            BM.Canvas.Pixels[j - 1, I - 1] := clGreen;
+          2:
+            BM.Canvas.Pixels[j - 1, I - 1] := clOlive;
+          3:
+            BM.Canvas.Pixels[j - 1, I - 1] := clNavy;
+          4:
+            BM.Canvas.Pixels[j - 1, I - 1] := clPurple;
+          5:
+            BM.Canvas.Pixels[j - 1, I - 1] := clTeal;
+          6:
+            BM.Canvas.Pixels[j - 1, I - 1] := clGray;
+          7:
+            BM.Canvas.Pixels[j - 1, I - 1] := clSilver;
+          8:
+            BM.Canvas.Pixels[j - 1, I - 1] := clRed;
+          9:
+            BM.Canvas.Pixels[j - 1, I - 1] := clLime;
+          10:
+            BM.Canvas.Pixels[j - 1, I - 1] := clBlue;
+          11:
+            BM.Canvas.Pixels[j - 1, I - 1] := clFuchsia;
+          12:
+            BM.Canvas.Pixels[j - 1, I - 1] := clAqua;
+          13:
+            BM.Canvas.Pixels[j - 1, I - 1] := clYellow;
         end;
   SaveMarkedImgToBitMap := BM;
 end;

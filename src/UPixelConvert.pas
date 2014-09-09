@@ -8,6 +8,8 @@ uses
 type
 
   TEColorSpace = (csFullColor, csRGB, csCMYK, csHSI, csYIQ);
+  TEColorChannel = (ccRed, ccGreen, ccBlue, ccCyan, ccMagenta, ccYellow,
+    ccKeyColor, ccHue, ccSaturation, ccIntensity, ccY, ccI, ccQ);
 
   TRColorChannels = record
     case TEColorSpace of
@@ -40,6 +42,7 @@ type
     procedure YIQToRGB;
 
     procedure ConvertTo(Target: TEColorSpace);
+
   public
     procedure SetFullColor(Color: TColor);
     function GetFullColor: TColor;
@@ -50,6 +53,7 @@ type
     function GetGreen: double;
     procedure SetBlue(blue: double);
     function GetBlue: double;
+    procedure SetRGB(r, g, b: double);
 
     procedure SetCyan(cyan: double);
     function GetCyan: double;
@@ -74,6 +78,8 @@ type
     procedure SetQ(Q: double);
     function GetQ: double;
 
+    procedure SetColorChannel(Channel: TEColorChannel; value: double);
+    function GetColorChannel(Channel: TEColorChannel): double;
   end;
 
 function TruncateBits(value: double; bits: byte): byte;
@@ -357,6 +363,13 @@ begin
   GetBlue := self.ColorChannels.ccBlue;
 end;
 
+procedure TColorPixel.SetRGB(r, g, b: double);
+begin
+  self.SetRed(r);
+  self.SetGreen(g);
+  self.SetBlue(b);
+end;
+
 procedure TColorPixel.SetCyan(cyan: double);
 begin
   ConvertTo(csCMYK);
@@ -475,6 +488,74 @@ function TColorPixel.GetQ: double;
 begin
   ConvertTo(csYIQ);
   GetQ := self.ColorChannels.ccQ;
+end;
+
+procedure TColorPixel.SetColorChannel(Channel: TEColorChannel; value: double);
+begin
+  case Channel of
+    ccRed:
+      self.SetRed(value);
+    ccGreen:
+      self.SetGreen(value);
+    ccBlue:
+      self.SetBlue(value);
+    ccCyan:
+      self.SetCyan(value);
+    ccMagenta:
+      self.SetMagenta(value);
+    ccYellow:
+      self.SetYellow(value);
+    ccKeyColor:
+      self.SetKeyColor(value);
+    ccHue:
+      self.SetHue(value);
+    ccSaturation:
+      self.SetSaturation(value);
+    ccIntensity:
+      self.SetIntensity(value);
+    ccY:
+      self.SetY(value);
+    ccI:
+      self.SetI(value);
+    ccQ:
+      self.SetQ(value);
+  end;
+end;
+
+function TColorPixel.GetColorChannel(Channel: TEColorChannel): double;
+var
+  r: double;
+begin
+  r := 0;
+  case Channel of
+    ccRed:
+      r := self.GetRed;
+    ccGreen:
+      r := self.GetGreen;
+    ccBlue:
+      r := self.GetBlue;
+    ccCyan:
+      r := self.GetCyan;
+    ccMagenta:
+      r := self.GetMagenta;
+    ccYellow:
+      r := self.GetYellow;
+    ccKeyColor:
+      r := self.GetKeyColor;
+    ccHue:
+      r := self.GetHue;
+    ccSaturation:
+      r := self.GetSaturation;
+    ccIntensity:
+      r := self.GetIntensity;
+    ccY:
+      r := self.GetY;
+    ccI:
+      r := self.GetI;
+    ccQ:
+      r := self.GetQ;
+  end;
+  GetColorChannel := r;
 end;
 
 function TruncateBits(value: double; bits: byte): byte;

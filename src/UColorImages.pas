@@ -15,6 +15,7 @@ type
   public
     Pixels: array of array of TColorPixel;
     constructor Create;
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
     procedure SetHeight(newHeight: word);
     function GetHeight: word;
     procedure SetWidth(newWidth: word);
@@ -36,14 +37,14 @@ type
     procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
     procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
     procedure HistogramEqualization(Channel: TEColorChannel);
-    function Histogram(Channel: TEColorChannel): TBitMap;
+    function Histogram(Channel: TEColorChannel): TBitmap;
 
     procedure LinearTransform(Channel: TEColorChannel; k, b: double);
     procedure LogTransform(Channel: TEColorChannel; c: double);
     procedure GammaTransform(Channel: TEColorChannel; c, gamma: double);
 
-    procedure LoadFromBitMap(BM: TBitMap);
-    function SaveToBitMap: TBitMap;
+    procedure LoadFromBitMap(BM: TBitmap);
+    function SaveToBitMap: TBitmap;
   end;
 
 implementation
@@ -53,6 +54,14 @@ begin
   inherited;
   self.Height := 0;
   self.Width := 0;
+end;
+
+constructor TCColorImage.CreateAndLoadFromBitmap(BM: TBitmap);
+begin
+  inherited;
+  self.Height := 0;
+  self.Width := 0;
+  self.LoadFromBitMap(BM);
 end;
 
 procedure TCColorImage.FreePixels;
@@ -124,7 +133,8 @@ begin
   GetChanel := GS;
 end;
 
-procedure TCColorImage.SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage);
+procedure TCColorImage.SetChannel(Channel: TEColorChannel;
+  GS: TCGrayscaleImage);
 var
   i, j: word;
 begin
@@ -203,7 +213,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word);
+procedure TCColorImage.TruncatedAVGFilter(Channel: TEColorChannel;
+  h, w, d: word);
 var
   GS: TCGrayscaleImage;
 begin
@@ -213,7 +224,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+procedure TCColorImage.PrevittFilter(Channel: TEColorChannel;
+  AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
@@ -223,7 +235,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+procedure TCColorImage.SobelFilter(Channel: TEColorChannel;
+  AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
@@ -233,7 +246,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+procedure TCColorImage.SharrFilter(Channel: TEColorChannel;
+  AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
@@ -243,7 +257,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+procedure TCColorImage.LaplaceFilter(Channel: TEColorChannel;
+  AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
@@ -263,7 +278,7 @@ begin
   GS.Free;
 end;
 
-function TCColorImage.Histogram(Channel: TEColorChannel): TBitMap;
+function TCColorImage.Histogram(Channel: TEColorChannel): TBitmap;
 var
   GS: TCGrayscaleImage;
 begin
@@ -303,7 +318,8 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.GammaTransform(Channel: TEColorChannel; c, gamma: double);
+procedure TCColorImage.GammaTransform(Channel: TEColorChannel;
+  c, gamma: double);
 var
   GS: TCGrayscaleImage;
 begin
@@ -313,7 +329,7 @@ begin
   GS.Free;
 end;
 
-procedure TCColorImage.LoadFromBitMap(BM: TBitMap);
+procedure TCColorImage.LoadFromBitMap(BM: TBitmap);
 var
   i, j: word;
 begin
@@ -327,12 +343,12 @@ begin
     end;
 end;
 
-function TCColorImage.SaveToBitMap: TBitMap;
+function TCColorImage.SaveToBitMap: TBitmap;
 var
   i, j: word;
-  BM: TBitMap;
+  BM: TBitmap;
 begin
-  BM := TBitMap.Create;
+  BM := TBitmap.Create;
   BM.Height := self.Height;
   BM.Width := self.Width;
   for i := 0 to self.Height - 1 do

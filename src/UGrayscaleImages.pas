@@ -17,6 +17,7 @@ type
   public
     Pixels: array of array of double;
     constructor Create;
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
 
     procedure SetHeight(newHeight: word);
     function GetHeight: word;
@@ -54,22 +55,37 @@ uses
   Math;
 
 const
-  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
+  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1),
+    (1, 1, 1));
 
-  SobelMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2), (-1, 0, 1));
-  SobelMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0), (-1, -2, -1));
+  SobelMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2),
+    (-1, 0, 1));
+  SobelMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0),
+    (-1, -2, -1));
 
-  PrevittMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-1, 0, 1), (-1, 0, 1));
-  PrevittMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (0, 0, 0), (-1, -1, -1));
+  PrevittMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-1, 0, 1),
+    (-1, 0, 1));
+  PrevittMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (0, 0, 0),
+    (-1, -1, -1));
 
-  SharrMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-3, 0, 3), (-10, 0, 10), (-3, 0, 3));
-  SharrMaskY: array [1 .. 3, 1 .. 3] of shortint = ((3, 10, 3), (0, 0, 0), (-3, -10, -3));
+  SharrMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-3, 0, 3), (-10, 0, 10),
+    (-3, 0, 3));
+  SharrMaskY: array [1 .. 3, 1 .. 3] of shortint = ((3, 10, 3), (0, 0, 0),
+    (-3, -10, -3));
 
 constructor TCGrayscaleImage.Create;
 begin
   inherited;
   self.Height := 0;
   self.Width := 0;
+end;
+
+constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
+begin
+  inherited;
+  self.Height := 0;
+  self.Width := 0;
+  self.LoadFromBitMap(BM);
 end;
 
 constructor TCGrayscaleImage.CreateCopy(From: TCGrayscaleImage);
@@ -172,8 +188,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 1 to self.Height - 1 do
-    for j := 1 to self.Width - 1 do
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
     begin
       sum := 0;
       for fi := -h to h do
@@ -217,7 +233,8 @@ begin
       sum := 0;
       for fi := -h to h do
         for fj := -w to w do
-          sum := sum + Mask[fi + h + 1, fj + w + 1] * self.GetPixelValue(i + fi, j + fj);
+          sum := sum + Mask[fi + h + 1, fj + w + 1] *
+            self.GetPixelValue(i + fi, j + fj);
       GSIR.Pixels[i, j] := sum / maskWeigth;
     end;
 
@@ -477,7 +494,9 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + PrevittMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + PrevittMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + PrevittMaskX[fi + 1 + 1, fj + 1 + 1] *
+            self.GetPixelValue(i + fi, j + fj) + PrevittMaskY
+            [fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -506,7 +525,9 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + SobelMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SobelMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + SobelMaskX[fi + 1 + 1, fj + 1 + 1] *
+            self.GetPixelValue(i + fi, j + fj) + SobelMaskY[fi + 1 + 1,
+            fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -535,7 +556,9 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + SharrMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SharrMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + SharrMaskX[fi + 1 + 1, fj + 1 + 1] *
+            self.GetPixelValue(i + fi, j + fj) + SharrMaskY[fi + 1 + 1,
+            fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -564,7 +587,8 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] *
+            self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] - response;
       GSIR.Pixels[i, j] := response;

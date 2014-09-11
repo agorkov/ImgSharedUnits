@@ -6,47 +6,58 @@ uses
   VCL.Graphics, UPixelConvert;
 
 type
+  /// Монохромное изображение
   TCGrayscaleImage = class
   private
-    Height, Width: word;
+    Height, Width: word; // Геометрические размеры изображения
 
-    procedure FreePixels;
+    procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels;
+    // Инициализация пикслей изображения нулевыми значениями
     function GetPixelValue(i, j: integer): double;
+    // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
     constructor CreateCopy(From: TCGrayscaleImage);
-  public
-    Pixels: array of array of double;
-    constructor Create;
-    constructor CreateAndLoadFromBitmap(BM: TBitmap);
-
-    procedure SetHeight(newHeight: word);
-    function GetHeight: word;
-    procedure SetWidth(newWidth: word);
-    function GetWidth: word;
+    // Конструктор с копированием другого монохромного изображения
     procedure Copy(From: TCGrayscaleImage);
+    // Копирование монохромного изображения
+    destructor Destroy; // Стандартный деструктор
+  public
+    Pixels: array of array of double; // Пиксели изображения
+    constructor Create; // Простой конструктор
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
+    // Конструктор с автоматической загрузкой изображения из битовой карты
 
-    procedure AVGFilter(h, w: word);
+    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
+    function GetHeight: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
+    function GetWidth: word; // Получить высоту изображения
+
+    procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
     procedure WeightedAVGFilter(h, w: word);
+    // Фильтр на основе взвешенной суммы
     procedure GeometricMeanFilter(h, w: word);
-    procedure MedianFilter(h, w: word);
-    procedure MaxFilter(h, w: word);
-    procedure MinFilter(h, w: word);
-    procedure MiddlePointFilter(h, w: word);
-    procedure TruncatedAVGFilter(h, w, d: word);
-    procedure PrevittFilter(AddToOriginal: boolean);
-    procedure SobelFilter(AddToOriginal: boolean);
-    procedure SharrFilter(AddToOriginal: boolean);
-    procedure LaplaceFilter(AddToOriginal: boolean);
+    // Фильтр на основе среднего геометрического
+    procedure MedianFilter(h, w: word); // Медианный фильтр
+    procedure MaxFilter(h, w: word); // Фильтр максимума
+    procedure MinFilter(h, w: word); // Фильтр минимума
+    procedure MiddlePointFilter(h, w: word); // Фильтр на основе срединной точки
+    procedure TruncatedAVGFilter(h, w, d: word); // Фильтр усечённого среднего
+    procedure PrevittFilter(AddToOriginal: boolean); // Фильтр Превитт
+    procedure SobelFilter(AddToOriginal: boolean); // Фильтр Собеля
+    procedure SharrFilter(AddToOriginal: boolean); // Фильтр Щарра
+    procedure LaplaceFilter(AddToOriginal: boolean); // Фильтр Лапласа
 
-    procedure HistogramEqualization;
-    function Histogram: TBitMap;
+    procedure HistogramEqualization; // Эквализация гистограммы
+    function Histogram: TBitmap; // Получение гистограммы
 
-    procedure LinearTransform(k, b: double);
-    procedure LogTransform(c: double);
-    procedure GammaTransform(c, gamma: double);
+    procedure LinearTransform(k, b: double); // Линейное преобразование
+    procedure LogTransform(c: double); // Логарифмическое преобразование
+    procedure GammaTransform(c, gamma: double); // Гамма-коррекция
 
-    procedure LoadFromBitMap(BM: TBitMap);
-    function SaveToBitMap: TBitMap;
+    procedure LoadFromBitMap(BM: TBitmap);
+    // Загрузка изображения из битовой карты
+    function SaveToBitMap: TBitmap;
+    // Сохранение изображения в виде битовой карты
   end;
 
 implementation
@@ -98,6 +109,12 @@ begin
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
       self.Pixels[i, j] := From.Pixels[i, j];
+end;
+
+destructor TCGrayscaleImage.Destroy;
+begin
+  self.FreePixels;
+  inherited;
 end;
 
 procedure TCGrayscaleImage.FreePixels;
@@ -687,11 +704,11 @@ begin
       self.Pixels[i, j] := h[round(k * self.Pixels[i, j])];
 end;
 
-function TCGrayscaleImage.Histogram: TBitMap;
+function TCGrayscaleImage.Histogram: TBitmap;
 const
   k = 255;
 var
-  BM: TBitMap;
+  BM: TBitmap;
   h: array [0 .. k] of LongWord;
   Max: LongWord;
   i, j: word;
@@ -707,7 +724,7 @@ begin
     if h[i] > Max then
       Max := h[i];
 
-  BM := TBitMap.Create;
+  BM := TBitmap.Create;
   BM.Height := 100;
   BM.Width := 256;
   BM.Canvas.Pen.Color := clGray;
@@ -722,15 +739,14 @@ begin
   Histogram := BM;
 end;
 
-procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitMap);
+procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
 var
   i, j: word;
   p: TColorPixel;
 begin
   p := TColorPixel.Create;
-  self.Height := BM.Height;
-  self.Width := BM.Width;
-  self.InitPixels;
+  self.SetHeight(BM.Height);
+  self.SetWidth(BM.Width);
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
     begin
@@ -740,14 +756,14 @@ begin
   p.Free;
 end;
 
-function TCGrayscaleImage.SaveToBitMap: TBitMap;
+function TCGrayscaleImage.SaveToBitMap: TBitmap;
 var
   i, j: word;
-  BM: TBitMap;
+  BM: TBitmap;
   p: TColorPixel;
 begin
   p := TColorPixel.Create;
-  BM := TBitMap.Create;
+  BM := TBitmap.Create;
   BM.Height := self.Height;
   BM.Width := self.Width;
   for i := 0 to self.Height - 1 do

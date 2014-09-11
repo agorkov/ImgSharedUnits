@@ -1,50 +1,74 @@
 unit UColorImages;
-
+
 interface
 
 uses
   VCL.Graphics, UPixelConvert, UGrayscaleImages;
 
 type
+  /// Цветное изображение
   TCColorImage = class
   private
-    Height, Width: word;
+    Height, Width: word; // Геометрические размеры изображения
 
-    procedure FreePixels;
+    procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels;
+    // Инициализация пикслей изображения нулевыми значениями
   public
-    Pixels: array of array of TColorPixel;
-    constructor Create;
+    Pixels: array of array of TColorPixel; // Пиксели изображения
+    constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap);
-    procedure SetHeight(newHeight: word);
-    function GetHeight: word;
-    procedure SetWidth(newWidth: word);
-    function GetWidth: word;
+    // Конструктор с автоматической загрузкой изображения из битовой карты
+    destructor Destroy; // Стандартный деструктор
+    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
+    function GetHeight: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
+    function GetWidth: word; // Получить высоту изображения
 
     function GetChanel(Channel: TEColorChannel): TCGrayscaleImage;
+    // Считать заданный цветовой канал как монохромное изображение
     procedure SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage);
+    // Задать моохромное изображение как цветовой канал
 
     procedure AVGFilter(Channel: TEColorChannel; h, w: word);
+    // Фильтр на основе среднегоарифметического
     procedure WeightedAVGFilter(Channel: TEColorChannel; h, w: word);
+    // Фильтр на основе взвешенной суммы
     procedure GeometricMeanFilter(Channel: TEColorChannel; h, w: word);
+    // Фильтр на основе среднего геометрического
     procedure MedianFilter(Channel: TEColorChannel; h, w: word);
+    // Медианный фильтр
     procedure MaxFilter(Channel: TEColorChannel; h, w: word);
-    procedure MinFilter(Channel: TEColorChannel; h, w: word);
+    // Фильтр максимума
+    procedure MinFilter(Channel: TEColorChannel; h, w: word); // Фильтр минимума
     procedure MiddlePointFilter(Channel: TEColorChannel; h, w: word);
+    // Фильтр на основе срединной точки
     procedure TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word);
+    // Фильтр усечённого среднего
     procedure PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    // Фильтр Превитт
     procedure SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    // Фильтр Собеля
     procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    // Фильтр Щарра
     procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    // Фильтр Лапласа
     procedure HistogramEqualization(Channel: TEColorChannel);
+    // Эквализация гистограммы
     function Histogram(Channel: TEColorChannel): TBitmap;
+    // Получение гистограммы
 
     procedure LinearTransform(Channel: TEColorChannel; k, b: double);
+    // Линейное преобразование
     procedure LogTransform(Channel: TEColorChannel; c: double);
+    // Логарифмическое преобразование
     procedure GammaTransform(Channel: TEColorChannel; c, gamma: double);
+    // Гамма-коррекция
 
     procedure LoadFromBitMap(BM: TBitmap);
+    // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap;
+    // Сохранение изображения в виде битовой карты
   end;
 
 implementation
@@ -62,6 +86,12 @@ begin
   self.Height := 0;
   self.Width := 0;
   self.LoadFromBitMap(BM);
+end;
+
+destructor TCColorImage.Destroy;
+begin
+  self.FreePixels;
+  inherited;
 end;
 
 procedure TCColorImage.FreePixels;
@@ -138,6 +168,11 @@ procedure TCColorImage.SetChannel(Channel: TEColorChannel;
 var
   i, j: word;
 begin
+  if (self.Height <> GS.GetHeight) or (self.Width <> GS.GetWidth) then
+  begin
+    self.SetHeight(GS.GetHeight);
+    self.SetWidth(GS.GetWidth);
+  end;
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
       self.Pixels[i, j].SetColorChannel(Channel, GS.Pixels[i, j]);
@@ -358,3 +393,4 @@ begin
 end;
 
 end.
+

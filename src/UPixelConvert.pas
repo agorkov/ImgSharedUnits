@@ -6,83 +6,107 @@ uses
   VCL.Graphics;
 
 type
-
+  /// Поддерживаемые цветовые пространства:
+  /// csFullColor - стандартный TColor
+  /// csRGB - аддитивный цветовой куб RGB
+  /// csCMYK - субтрактивное цветовое пространство (субстративный аналог RGB)
+  /// csHSI - пространство тон-насыщенность-интенсивность
+  /// csYIQ - цветоразностная модель
   TEColorSpace = (csFullColor, csRGB, csCMYK, csHSI, csYIQ);
+
+  /// Константы для каждого цветового канала:
+  /// ccRed - красный, ccGreen - зелёный, ccBlue - синий
+  /// ccCyan - голубой, ccMagenta - пурпурный, ccYellow - жёлтый, ccKeyColor - ключевой цвет (чёрный)
+  /// ccHue - тон, ccSaturation - насыщенность, ccIntensity - интенсивность
+  /// ccY - компонента интенсивности, ccI - цветоразностная компонента, ccQ - цветоразностная компонента
   TEColorChannel = (ccRed, ccGreen, ccBlue, ccCyan, ccMagenta, ccYellow,
     ccKeyColor, ccHue, ccSaturation, ccIntensity, ccY, ccI, ccQ);
 
+  /// Описание цвета. В зависимости от выбранной вариантной части, цвет представляется в одном из поддерживаемых цветовых пространств
   TRColorChannels = record
     case TEColorSpace of
-      csFullColor:
+      csFullColor: // Стандартный TColor
         (FullColor: TColor);
-      csRGB:
+      csRGB: // Аддитивный цветовой куб RGB
         (ccRed, ccGreen, ccBlue: double);
-      csCMYK:
+      csCMYK: // Субтрактивное цветовое пространство (субстративный аналог RGB)
         (ccCyan, ccMagenta, ccYellow, ccKeyColor: double);
-      csHSI:
+      csHSI: // Пространство тон-насыщенность-интенсивность
         (ccHue, ccSaturation, ccIntensity: double);
-      csYIQ:
+      csYIQ: // Цветоразностная модель
         (ccY, ccI, ccQ: double);
   end;
 
+  /// Пиксел цветного изображения
   TColorPixel = class
   private
-    ColorSpace: TEColorSpace;
+    ColorSpace: TEColorSpace; // Используемое цветовое пространство
     ColorChannels: TRColorChannels;
-    procedure RGBToFullColor;
+    // Цвет, разделённый на каналы в соответствии с выбранным цветовым пространством
+
+    procedure RGBToFullColor; // Преобразование из пространства RGB в TColor
     procedure FullColorToRGB;
+    // Преобразование из TColor в цветовое пространство RGB
 
     procedure RGBToCMYK;
+    // Преобразование из пространства RGB в пространство CMYK
     procedure CMYKToRGB;
+    // Преобразование из пространства CMYK в пространство RGB
 
-    procedure RGBToHSI;
-    procedure HSIToRGB;
+    procedure RGBToHSI; // Преобразование из пространства RGB в пространство HSI
+    procedure HSIToRGB; // Преобразование из пространства HSI в пространство RGB
 
-    procedure RGBToYIQ;
-    procedure YIQToRGB;
+    procedure RGBToYIQ; // Преобразование из пространства RGB в пространство YIQ
+    procedure YIQToRGB; // Преобразование из пространства YIQ в пространство RGB
 
     procedure ConvertTo(Target: TEColorSpace);
+    // Преобразование в указаное цветовое пространство
 
   public
-    procedure SetFullColor(Color: TColor);
-    function GetFullColor: TColor;
+    procedure SetFullColor(Color: TColor); // Задать TColor
+    function GetFullColor: TColor; // Считать TColor
 
-    procedure SetRed(red: double);
-    function GetRed: double;
-    procedure SetGreen(green: double);
-    function GetGreen: double;
-    procedure SetBlue(blue: double);
-    function GetBlue: double;
-    procedure SetRGB(r, g, b: double);
+    procedure SetRed(red: double); // Задать красную составляющую
+    function GetRed: double; // Получить красную составляющую
+    procedure SetGreen(green: double); // Задать зелёную составляющую
+    function GetGreen: double; // Получить зелёную составляющую
+    procedure SetBlue(blue: double); // Задать синюю составляющую
+    function GetBlue: double; // Получить синюю составляющую
+    procedure SetRGB(R, G, B: double); // Задать все параметры RGB
 
-    procedure SetCyan(cyan: double);
-    function GetCyan: double;
-    procedure SetMagenta(magenta: double);
-    function GetMagenta: double;
-    procedure SetYellow(yellow: double);
-    function GetYellow: double;
+    procedure SetCyan(cyan: double); // Задать голубую составляющую
+    function GetCyan: double; // Получить голубую составляющую
+    procedure SetMagenta(magenta: double); // Задать пурпурную составляющую
+    function GetMagenta: double; // Получить пурпурную составляющую
+    procedure SetYellow(yellow: double); // Задать жёлтую составляющую
+    function GetYellow: double; // Получить жёлтую составляющую
     procedure SetKeyColor(keyColor: double);
-    function GetKeyColor: double;
+    // Задать ключевую (чёрную) составляющую
+    function GetKeyColor: double; // Получить ключевую (чёрную) составляющую
+    procedure SetCMYK(C, M, Y, K: double); // Задать все параметры CMYK
 
-    procedure SetHue(hue: double);
+    procedure SetHue(hue: double); // Задать составляющую цветового тона
     function GetHue: double;
     procedure SetSaturation(saturation: double);
+    // Задать составляющую насыщенности
     function GetSaturation: double;
     procedure SetIntensity(intensity: double);
+    // Задать составляющую интенсивности
     function GetIntensity: double;
+    procedure SetHSI(H, S, I: double); // Задать все параметры HSI
 
-    procedure SetY(Y: double);
+    procedure SetY(Y: double); // Задать Y составляющую
     function GetY: double;
-    procedure SetI(I: double);
+    procedure SetI(I: double); // Задать I составляющую
     function GetI: double;
-    procedure SetQ(Q: double);
+    procedure SetQ(Q: double); // Задать Q составляющую
     function GetQ: double;
+    procedure SetYIQ(Y, I, Q: double); // Задать все параметры YIQ
 
     procedure SetColorChannel(Channel: TEColorChannel; value: double);
+    // Задать значение указанного цветового канала
     function GetColorChannel(Channel: TEColorChannel): double;
   end;
-
-function TruncateBits(value: double; bits: byte): byte;
 
 implementation
 
@@ -127,20 +151,20 @@ end;
 
 procedure TColorPixel.RGBToCMYK;
 var
-  r, g, b: double;
+  R, G, B: double;
 begin
   self.ColorSpace := csCMYK;
-  r := self.ColorChannels.ccRed;
-  g := self.ColorChannels.ccGreen;
-  b := self.ColorChannels.ccBlue;
-  self.ColorChannels.ccKeyColor := 1 - max(max(r, g), b);
+  R := self.ColorChannels.ccRed;
+  G := self.ColorChannels.ccGreen;
+  B := self.ColorChannels.ccBlue;
+  self.ColorChannels.ccKeyColor := 1 - max(max(R, G), B);
   if self.ColorChannels.ccKeyColor <> 1 then
   begin
-    self.ColorChannels.ccCyan := (1 - r - self.ColorChannels.ccKeyColor) /
+    self.ColorChannels.ccCyan := (1 - R - self.ColorChannels.ccKeyColor) /
       (1 - self.ColorChannels.ccKeyColor);
-    self.ColorChannels.ccMagenta := (1 - g - self.ColorChannels.ccKeyColor) /
+    self.ColorChannels.ccMagenta := (1 - G - self.ColorChannels.ccKeyColor) /
       (1 - self.ColorChannels.ccKeyColor);
-    self.ColorChannels.ccYellow := (1 - b - self.ColorChannels.ccKeyColor) /
+    self.ColorChannels.ccYellow := (1 - B - self.ColorChannels.ccKeyColor) /
       (1 - self.ColorChannels.ccKeyColor);
   end
   else
@@ -167,34 +191,34 @@ end;
 
 procedure TColorPixel.RGBToHSI;
 var
-  r, g, b: double;
+  R, G, B, rHue: double;
 begin
   self.ColorSpace := csHSI;
-  r := self.ColorChannels.ccRed;
-  g := self.ColorChannels.ccGreen;
-  b := self.ColorChannels.ccBlue;
-  self.ColorChannels.ccIntensity := (r + g + b) / 3;
+  R := self.ColorChannels.ccRed;
+  G := self.ColorChannels.ccGreen;
+  B := self.ColorChannels.ccBlue;
+  self.ColorChannels.ccIntensity := (R + G + B) / 3;
   if self.ColorChannels.ccIntensity > 0 then
-    self.ColorChannels.ccSaturation := 1 - min(min(r, g), b) /
+    self.ColorChannels.ccSaturation := 1 - min(min(R, G), B) /
       self.ColorChannels.ccIntensity
   else
     self.ColorChannels.ccSaturation := 0;
   if self.ColorChannels.ccSaturation <> 0 then
   begin
-    r := round(r * 255);
-    g := round(g * 255);
-    b := round(b * 255);
-    if g >= b then
-      self.ColorChannels.ccHue :=
-        RadToDeg(arccos((r - g / 2 - b / 2) / sqrt(sqr(r) + sqr(g) + sqr(b) - r
-        * g - r * b - g * b)))
+    R := round(R * 255);
+    G := round(G * 255);
+    B := round(B * 255);
+    if G >= B then
+      rHue := RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) +
+        sqr(B) - R * G - R * B - G * B)))
     else
-      self.ColorChannels.ccHue := 360 -
-        RadToDeg(arccos((r - g / 2 - b / 2) / sqrt(sqr(r) + sqr(g) + sqr(b) - r
-        * g - r * b - g * b)))
+      rHue := 360 - RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) +
+        sqr(B) - R * G - R * B - G * B)))
   end
   else
-    self.ColorChannels.ccHue := 500;
+    rHue := 361;
+  rHue := (rHue + 1) / 363;
+  self.ColorChannels.ccHue := rHue;
 end;
 
 procedure TColorPixel.HSIToRGB;
@@ -202,7 +226,7 @@ var
   H, S, I: double;
 begin
   self.ColorSpace := csRGB;
-  H := self.ColorChannels.ccHue;
+  H := self.ColorChannels.ccHue * 363 - 1;
   S := self.ColorChannels.ccSaturation;
   I := self.ColorChannels.ccIntensity;
   if H = 0 then
@@ -257,15 +281,17 @@ end;
 
 procedure TColorPixel.RGBToYIQ;
 var
-  r, g, b: double;
+  R, G, B: double;
 begin
   self.ColorSpace := csYIQ;
-  r := self.ColorChannels.ccRed;
-  g := self.ColorChannels.ccGreen;
-  b := self.ColorChannels.ccBlue;
-  self.ColorChannels.ccY := 0.299 * r + 0.587 * g + 0.114 * b;
-  self.ColorChannels.ccI := 0.596 * r - 0.274 * g - 0.321 * b;
-  self.ColorChannels.ccQ := 0.211 * r - 0.523 * g + 0.311 * b;
+  R := self.ColorChannels.ccRed;
+  G := self.ColorChannels.ccGreen;
+  B := self.ColorChannels.ccBlue;
+  self.ColorChannels.ccY := 0.299 * R + 0.587 * G + 0.114 * B;
+  self.ColorChannels.ccI := 0.596 * R - 0.274 * G - 0.321 * B;
+  self.ColorChannels.ccI := (self.ColorChannels.ccI + 0.595) / 1.191;
+  self.ColorChannels.ccQ := 0.211 * R - 0.523 * G + 0.311 * B;
+  self.ColorChannels.ccQ := (self.ColorChannels.ccQ + 0.523) / 1.045;
 end;
 
 procedure TColorPixel.YIQToRGB;
@@ -275,7 +301,9 @@ begin
   self.ColorSpace := csRGB;
   Y := self.ColorChannels.ccY;
   I := self.ColorChannels.ccI;
+  I := I * 1.191 - 0.595;
   Q := self.ColorChannels.ccQ;
+  Q := Q * 1.045 - 0.523;
   self.ColorChannels.ccRed := Y + 0.956 * I + 0.621 * Q;
   self.ColorChannels.ccGreen := Y - 0.272 * I - 0.647 * Q;
   self.ColorChannels.ccBlue := Y - 1.107 * I + 1.706 * Q;
@@ -363,11 +391,11 @@ begin
   GetBlue := self.ColorChannels.ccBlue;
 end;
 
-procedure TColorPixel.SetRGB(r, g, b: double);
+procedure TColorPixel.SetRGB(R, G, B: double);
 begin
-  self.SetRed(r);
-  self.SetGreen(g);
-  self.SetBlue(b);
+  self.SetRed(R);
+  self.SetGreen(G);
+  self.SetBlue(B);
 end;
 
 procedure TColorPixel.SetCyan(cyan: double);
@@ -418,6 +446,14 @@ begin
   GetKeyColor := self.ColorChannels.ccKeyColor;
 end;
 
+procedure TColorPixel.SetCMYK(C, M, Y, K: double);
+begin
+  self.SetCyan(C);
+  self.SetMagenta(M);
+  self.SetYellow(Y);
+  self.SetKeyColor(K);
+end;
+
 procedure TColorPixel.SetHue(hue: double);
 begin
   ConvertTo(csHSI);
@@ -452,6 +488,13 @@ function TColorPixel.GetIntensity: double;
 begin
   ConvertTo(csHSI);
   GetIntensity := self.ColorChannels.ccIntensity;
+end;
+
+procedure TColorPixel.SetHSI(H, S, I: double);
+begin
+  self.SetHue(H);
+  self.SetSaturation(S);
+  self.SetIntensity(I);
 end;
 
 procedure TColorPixel.SetY(Y: double);
@@ -490,6 +533,13 @@ begin
   GetQ := self.ColorChannels.ccQ;
 end;
 
+procedure TColorPixel.SetYIQ(Y, I, Q: double);
+begin
+  self.SetY(Y);
+  self.SetI(I);
+  self.SetQ(Q);
+end;
+
 procedure TColorPixel.SetColorChannel(Channel: TEColorChannel; value: double);
 begin
   case Channel of
@@ -524,61 +574,38 @@ end;
 
 function TColorPixel.GetColorChannel(Channel: TEColorChannel): double;
 var
-  r: double;
+  R: double;
 begin
-  r := 0;
+  R := 0;
   case Channel of
     ccRed:
-      r := self.GetRed;
+      R := self.GetRed;
     ccGreen:
-      r := self.GetGreen;
+      R := self.GetGreen;
     ccBlue:
-      r := self.GetBlue;
+      R := self.GetBlue;
     ccCyan:
-      r := self.GetCyan;
+      R := self.GetCyan;
     ccMagenta:
-      r := self.GetMagenta;
+      R := self.GetMagenta;
     ccYellow:
-      r := self.GetYellow;
+      R := self.GetYellow;
     ccKeyColor:
-      r := self.GetKeyColor;
+      R := self.GetKeyColor;
     ccHue:
-      r := self.GetHue;
+      R := self.GetHue;
     ccSaturation:
-      r := self.GetSaturation;
+      R := self.GetSaturation;
     ccIntensity:
-      r := self.GetIntensity;
+      R := self.GetIntensity;
     ccY:
-      r := self.GetY;
+      R := self.GetY;
     ccI:
-      r := self.GetI;
+      R := self.GetI;
     ccQ:
-      r := self.GetQ;
+      R := self.GetQ;
   end;
-  GetColorChannel := r;
-end;
-
-function TruncateBits(value: double; bits: byte): byte;
-var
-  StepReal: real;
-  StepByte: byte;
-  I: byte;
-  r: byte;
-begin
-  if value > 1 then
-    value := 1;
-  if value < 0 then
-    value := 0;
-  StepReal := 1 / (1 shl bits);
-  StepByte := 256 div (1 shl bits);
-  I := 0;
-  while I * StepReal < value do
-    I := I + 1;
-  if bits < 8 then
-    r := (I - 1) * StepByte + (StepByte div 2)
-  else
-    r := I;
-  TruncateBits := r;
+  GetColorChannel := R;
 end;
 
 end.

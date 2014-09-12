@@ -19,7 +19,8 @@ type
     constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap);
     // Конструктор с автоматической загрузкой изображения из битовой карты
-    destructor Destroy; // Стандартный деструктор
+    destructor FreeImage; // Стандартный деструктор
+
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
@@ -88,7 +89,7 @@ begin
   self.LoadFromBitMap(BM);
 end;
 
-destructor TCColorImage.Destroy;
+destructor TCColorImage.FreeImage;
 begin
   self.FreePixels;
   inherited;
@@ -96,12 +97,20 @@ end;
 
 procedure TCColorImage.FreePixels;
 var
-  i: word;
+  i, j: word;
 begin
   if (self.Height > 0) and (self.Width > 0) then
   begin
     for i := 0 to self.Height - 1 do
+    begin
+      for j := 0 to self.Width - 1 do
+        self.Pixels[i, j].Free;
+      SetLength(self.Pixels[i], 0);
+      Finalize(self.Pixels[i]);
       self.Pixels[i] := nil;
+    end;
+    SetLength(self.Pixels, 0);
+    Finalize(self.Pixels);
     self.Pixels := nil;
   end;
 end;
@@ -185,7 +194,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.AVGFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.WeightedAVGFilter(Channel: TEColorChannel; h, w: word);
@@ -195,7 +204,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.WeightedAVGFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.GeometricMeanFilter(Channel: TEColorChannel; h, w: word);
@@ -205,7 +214,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.GeometricMeanFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.MedianFilter(Channel: TEColorChannel; h, w: word);
@@ -215,7 +224,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MedianFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.MaxFilter(Channel: TEColorChannel; h, w: word);
@@ -225,7 +234,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MaxFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.MinFilter(Channel: TEColorChannel; h, w: word);
@@ -235,7 +244,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MinFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.MiddlePointFilter(Channel: TEColorChannel; h, w: word);
@@ -245,7 +254,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MiddlePointFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.TruncatedAVGFilter(Channel: TEColorChannel;
@@ -256,7 +265,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.TruncatedAVGFilter(h, w, d);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.PrevittFilter(Channel: TEColorChannel;
@@ -267,7 +276,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.PrevittFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.SobelFilter(Channel: TEColorChannel;
@@ -278,7 +287,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.SobelFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.SharrFilter(Channel: TEColorChannel;
@@ -289,7 +298,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.SharrFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.LaplaceFilter(Channel: TEColorChannel;
@@ -300,7 +309,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.LaplaceFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.HistogramEqualization(Channel: TEColorChannel);
@@ -310,7 +319,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.HistogramEqualization;
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 function TCColorImage.Histogram(Channel: TEColorChannel): TBitmap;
@@ -319,19 +328,8 @@ var
 begin
   GS := self.GetChanel(Channel);
   Histogram := GS.Histogram;
-  GS.Free;
+  GS.FreeImage;
 end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TCColorImage.LinearTransform(Channel: TEColorChannel; k, b: double);
 var
@@ -340,7 +338,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.LinearTransform(k, b);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.LogTransform(Channel: TEColorChannel; c: double);
@@ -350,7 +348,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.LogTransform(c);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.GammaTransform(Channel: TEColorChannel;
@@ -361,7 +359,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.GammaTransform(c, gamma);
   self.SetChannel(Channel, GS);
-  GS.Free;
+  GS.FreeImage;
 end;
 
 procedure TCColorImage.LoadFromBitMap(BM: TBitmap);

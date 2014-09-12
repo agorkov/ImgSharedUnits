@@ -20,12 +20,12 @@ type
     // Конструктор с копированием другого монохромного изображения
     procedure Copy(From: TCGrayscaleImage);
     // Копирование монохромного изображения
-    destructor Destroy; // Стандартный деструктор
   public
     Pixels: array of array of double; // Пиксели изображения
     constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap);
     // Конструктор с автоматической загрузкой изображения из битовой карты
+     destructor FreeImage; // Стандартный деструктор
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
@@ -111,7 +111,7 @@ begin
       self.Pixels[i, j] := From.Pixels[i, j];
 end;
 
-destructor TCGrayscaleImage.Destroy;
+destructor TCGrayscaleImage.FreeImage;
 begin
   self.FreePixels;
   inherited;
@@ -124,7 +124,13 @@ begin
   if (self.Height > 0) and (self.Width > 0) then
   begin
     for i := 0 to self.Height - 1 do
+    begin
+      SetLength(self.Pixels[i], 0);
+      Finalize(self.Pixels[i]);
       self.Pixels[i] := nil;
+    end;
+    SetLength(self.Pixels, 0);
+    Finalize(self.Pixels);
     self.Pixels := nil;
   end;
 end;
@@ -204,7 +210,6 @@ var
   GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
     begin
@@ -257,6 +262,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+  SetLength(MAsk,0);
+  Finalize(Mask);
+  Mask:=nil;
 end;
 
 procedure TCGrayscaleImage.GeometricMeanFilter(h, w: word);
@@ -345,6 +353,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+  SetLength(tmp,0);
+  Finalize(tmp);
+  tmp:=nil;
 end;
 
 procedure TCGrayscaleImage.MaxFilter(h, w: word);
@@ -379,6 +390,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+    SetLength(tmp,0);
+  Finalize(tmp);
+  tmp:=nil;
 end;
 
 procedure TCGrayscaleImage.MinFilter(h, w: word);
@@ -413,6 +427,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+    SetLength(tmp,0);
+  Finalize(tmp);
+  tmp:=nil;
 end;
 
 procedure TCGrayscaleImage.MiddlePointFilter(h, w: word);
@@ -452,6 +469,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+    SetLength(tmp,0);
+  Finalize(tmp);
+  tmp:=nil;
 end;
 
 procedure TCGrayscaleImage.TruncatedAVGFilter(h, w, d: word);
@@ -494,6 +514,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
+    SetLength(tmp,0);
+  Finalize(tmp);
+  tmp:=nil;
 end;
 
 procedure TCGrayscaleImage.PrevittFilter(AddToOriginal: boolean);
@@ -641,7 +664,6 @@ var
   i, j: word;
   val: double;
 begin
-  // TODO Подумать насчёт необходимости в домножении на 255
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
     begin
@@ -670,17 +692,6 @@ begin
       self.Pixels[i, j] := val;
     end;
 end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TCGrayscaleImage.HistogramEqualization;
 const

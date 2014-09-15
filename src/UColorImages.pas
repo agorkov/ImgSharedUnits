@@ -12,64 +12,42 @@ type
     Height, Width: word; // Геометрические размеры изображения
 
     procedure FreePixels; // Освобождение пикселей изображения
-    procedure InitPixels;
-    // Инициализация пикслей изображения нулевыми значениями
+    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
   public
     Pixels: array of array of TColorPixel; // Пиксели изображения
     constructor Create; // Простой конструктор
-    constructor CreateAndLoadFromBitmap(BM: TBitmap);
-    // Конструктор с автоматической загрузкой изображения из битовой карты
-    destructor FreeImage; // Стандартный деструктор
+    constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
+    destructor FreeColorImage; // Стандартный деструктор
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
     function GetWidth: word; // Получить высоту изображения
 
-    function GetChanel(Channel: TEColorChannel): TCGrayscaleImage;
-    // Считать заданный цветовой канал как монохромное изображение
-    procedure SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage);
-    // Задать моохромное изображение как цветовой канал
+    function GetChanel(Channel: TEColorChannel): TCGrayscaleImage; // Считать заданный цветовой канал как монохромное изображение
+    procedure SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage); // Задать моохромное изображение как цветовой канал
 
-    procedure AVGFilter(Channel: TEColorChannel; h, w: word);
-    // Фильтр на основе среднегоарифметического
-    procedure WeightedAVGFilter(Channel: TEColorChannel; h, w: word);
-    // Фильтр на основе взвешенной суммы
-    procedure GeometricMeanFilter(Channel: TEColorChannel; h, w: word);
-    // Фильтр на основе среднего геометрического
-    procedure MedianFilter(Channel: TEColorChannel; h, w: word);
-    // Медианный фильтр
-    procedure MaxFilter(Channel: TEColorChannel; h, w: word);
-    // Фильтр максимума
+    procedure AVGFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе среднегоарифметического
+    procedure WeightedAVGFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе взвешенной суммы
+    procedure GeometricMeanFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе среднего геометрического
+    procedure MedianFilter(Channel: TEColorChannel; h, w: word); // Медианный фильтр
+    procedure MaxFilter(Channel: TEColorChannel; h, w: word); // Фильтр максимума
     procedure MinFilter(Channel: TEColorChannel; h, w: word); // Фильтр минимума
-    procedure MiddlePointFilter(Channel: TEColorChannel; h, w: word);
-    // Фильтр на основе срединной точки
-    procedure TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word);
-    // Фильтр усечённого среднего
-    procedure PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean);
-    // Фильтр Превитт
-    procedure SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean);
-    // Фильтр Собеля
-    procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
-    // Фильтр Щарра
-    procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
-    // Фильтр Лапласа
-    procedure HistogramEqualization(Channel: TEColorChannel);
-    // Эквализация гистограммы
-    function Histogram(Channel: TEColorChannel): TBitmap;
-    // Получение гистограммы
+    procedure MiddlePointFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе срединной точки
+    procedure TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word); // Фильтр усечённого среднего
+    procedure PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Превитт
+    procedure SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Собеля
+    procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Щарра
+    procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Лапласа
+    procedure HistogramEqualization(Channel: TEColorChannel); // Эквализация гистограммы
+    function Histogram(Channel: TEColorChannel): TBitmap; // Получение гистограммы
 
-    procedure LinearTransform(Channel: TEColorChannel; k, b: double);
-    // Линейное преобразование
-    procedure LogTransform(Channel: TEColorChannel; c: double);
-    // Логарифмическое преобразование
-    procedure GammaTransform(Channel: TEColorChannel; c, gamma: double);
-    // Гамма-коррекция
+    procedure LinearTransform(Channel: TEColorChannel; k, b: double); // Линейное преобразование
+    procedure LogTransform(Channel: TEColorChannel; c: double); // Логарифмическое преобразование
+    procedure GammaTransform(Channel: TEColorChannel; c, gamma: double); // Гамма-коррекция
 
-    procedure LoadFromBitMap(BM: TBitmap);
-    // Загрузка изображения из битовой карты
-    function SaveToBitMap: TBitmap;
-    // Сохранение изображения в виде битовой карты
+    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
+    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
   end;
 
 implementation
@@ -89,7 +67,7 @@ begin
   self.LoadFromBitMap(BM);
 end;
 
-destructor TCColorImage.FreeImage;
+destructor TCColorImage.FreeColorImage;
 begin
   self.FreePixels;
   inherited;
@@ -172,8 +150,7 @@ begin
   GetChanel := GS;
 end;
 
-procedure TCColorImage.SetChannel(Channel: TEColorChannel;
-  GS: TCGrayscaleImage);
+procedure TCColorImage.SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage);
 var
   i, j: word;
 begin
@@ -194,7 +171,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.AVGFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.WeightedAVGFilter(Channel: TEColorChannel; h, w: word);
@@ -204,7 +181,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.WeightedAVGFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.GeometricMeanFilter(Channel: TEColorChannel; h, w: word);
@@ -214,7 +191,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.GeometricMeanFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.MedianFilter(Channel: TEColorChannel; h, w: word);
@@ -224,7 +201,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MedianFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.MaxFilter(Channel: TEColorChannel; h, w: word);
@@ -234,7 +211,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MaxFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.MinFilter(Channel: TEColorChannel; h, w: word);
@@ -244,7 +221,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.MinFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.MiddlePointFilter(Channel: TEColorChannel; h, w: word);
@@ -254,62 +231,57 @@ begin
   GS := self.GetChanel(Channel);
   GS.MiddlePointFilter(h, w);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.TruncatedAVGFilter(Channel: TEColorChannel;
-  h, w, d: word);
+procedure TCColorImage.TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.TruncatedAVGFilter(h, w, d);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.PrevittFilter(Channel: TEColorChannel;
-  AddToOriginal: boolean);
+procedure TCColorImage.PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.PrevittFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.SobelFilter(Channel: TEColorChannel;
-  AddToOriginal: boolean);
+procedure TCColorImage.SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.SobelFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.SharrFilter(Channel: TEColorChannel;
-  AddToOriginal: boolean);
+procedure TCColorImage.SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.SharrFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.LaplaceFilter(Channel: TEColorChannel;
-  AddToOriginal: boolean);
+procedure TCColorImage.LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.LaplaceFilter(AddToOriginal);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.HistogramEqualization(Channel: TEColorChannel);
@@ -319,7 +291,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.HistogramEqualization;
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 function TCColorImage.Histogram(Channel: TEColorChannel): TBitmap;
@@ -328,7 +300,7 @@ var
 begin
   GS := self.GetChanel(Channel);
   Histogram := GS.Histogram;
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.LinearTransform(Channel: TEColorChannel; k, b: double);
@@ -338,7 +310,7 @@ begin
   GS := self.GetChanel(Channel);
   GS.LinearTransform(k, b);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.LogTransform(Channel: TEColorChannel; c: double);
@@ -348,18 +320,17 @@ begin
   GS := self.GetChanel(Channel);
   GS.LogTransform(c);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
-procedure TCColorImage.GammaTransform(Channel: TEColorChannel;
-  c, gamma: double);
+procedure TCColorImage.GammaTransform(Channel: TEColorChannel; c, gamma: double);
 var
   GS: TCGrayscaleImage;
 begin
   GS := self.GetChanel(Channel);
   GS.GammaTransform(c, gamma);
   self.SetChannel(Channel, GS);
-  GS.FreeImage;
+  GS.FreeGrayscaleImage;
 end;
 
 procedure TCColorImage.LoadFromBitMap(BM: TBitmap);

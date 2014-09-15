@@ -1,5 +1,5 @@
 unit UGrayscaleImages;
-
+
 interface
 
 uses
@@ -12,20 +12,15 @@ type
     Height, Width: word; // Геометрические размеры изображения
 
     procedure FreePixels; // Освобождение пикселей изображения
-    procedure InitPixels;
-    // Инициализация пикслей изображения нулевыми значениями
-    function GetPixelValue(i, j: integer): double;
-    // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
-    constructor CreateCopy(From: TCGrayscaleImage);
-    // Конструктор с копированием другого монохромного изображения
-    procedure Copy(From: TCGrayscaleImage);
-    // Копирование монохромного изображения
+    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
+    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+    constructor CreateCopy(From: TCGrayscaleImage); // Конструктор с копированием другого монохромного изображения
+    procedure Copy(From: TCGrayscaleImage); // Копирование монохромного изображения
   public
     Pixels: array of array of double; // Пиксели изображения
     constructor Create; // Простой конструктор
-    constructor CreateAndLoadFromBitmap(BM: TBitmap);
-    // Конструктор с автоматической загрузкой изображения из битовой карты
-     destructor FreeImage; // Стандартный деструктор
+    constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
+    destructor FreeGrayscaleImage; // Стандартный деструктор
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
@@ -33,10 +28,8 @@ type
     function GetWidth: word; // Получить высоту изображения
 
     procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
-    procedure WeightedAVGFilter(h, w: word);
-    // Фильтр на основе взвешенной суммы
-    procedure GeometricMeanFilter(h, w: word);
-    // Фильтр на основе среднего геометрического
+    procedure WeightedAVGFilter(h, w: word); // Фильтр на основе взвешенной суммы
+    procedure GeometricMeanFilter(h, w: word); // Фильтр на основе среднего геометрического
     procedure MedianFilter(h, w: word); // Медианный фильтр
     procedure MaxFilter(h, w: word); // Фильтр максимума
     procedure MinFilter(h, w: word); // Фильтр минимума
@@ -54,10 +47,8 @@ type
     procedure LogTransform(c: double); // Логарифмическое преобразование
     procedure GammaTransform(c, gamma: double); // Гамма-коррекция
 
-    procedure LoadFromBitMap(BM: TBitmap);
-    // Загрузка изображения из битовой карты
-    function SaveToBitMap: TBitmap;
-    // Сохранение изображения в виде битовой карты
+    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
+    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
   end;
 
 implementation
@@ -66,23 +57,16 @@ uses
   Math;
 
 const
-  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1),
-    (1, 1, 1));
+  LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
 
-  SobelMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2),
-    (-1, 0, 1));
-  SobelMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0),
-    (-1, -2, -1));
+  SobelMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2), (-1, 0, 1));
+  SobelMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0), (-1, -2, -1));
 
-  PrevittMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-1, 0, 1),
-    (-1, 0, 1));
-  PrevittMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (0, 0, 0),
-    (-1, -1, -1));
+  PrevittMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-1, 0, 1), (-1, 0, 1));
+  PrevittMaskY: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (0, 0, 0), (-1, -1, -1));
 
-  SharrMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-3, 0, 3), (-10, 0, 10),
-    (-3, 0, 3));
-  SharrMaskY: array [1 .. 3, 1 .. 3] of shortint = ((3, 10, 3), (0, 0, 0),
-    (-3, -10, -3));
+  SharrMaskX: array [1 .. 3, 1 .. 3] of shortint = ((-3, 0, 3), (-10, 0, 10), (-3, 0, 3));
+  SharrMaskY: array [1 .. 3, 1 .. 3] of shortint = ((3, 10, 3), (0, 0, 0), (-3, -10, -3));
 
 constructor TCGrayscaleImage.Create;
 begin
@@ -111,7 +95,7 @@ begin
       self.Pixels[i, j] := From.Pixels[i, j];
 end;
 
-destructor TCGrayscaleImage.FreeImage;
+destructor TCGrayscaleImage.FreeGrayscaleImage;
 begin
   self.FreePixels;
   inherited;
@@ -255,16 +239,15 @@ begin
       sum := 0;
       for fi := -h to h do
         for fj := -w to w do
-          sum := sum + Mask[fi + h + 1, fj + w + 1] *
-            self.GetPixelValue(i + fi, j + fj);
+          sum := sum + Mask[fi + h + 1, fj + w + 1] * self.GetPixelValue(i + fi, j + fj);
       GSIR.Pixels[i, j] := sum / maskWeigth;
     end;
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(MAsk,0);
+  SetLength(Mask, 0);
   Finalize(Mask);
-  Mask:=nil;
+  Mask := nil;
 end;
 
 procedure TCGrayscaleImage.GeometricMeanFilter(h, w: word);
@@ -353,9 +336,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(tmp,0);
+  SetLength(tmp, 0);
   Finalize(tmp);
-  tmp:=nil;
+  tmp := nil;
 end;
 
 procedure TCGrayscaleImage.MaxFilter(h, w: word);
@@ -390,9 +373,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-    SetLength(tmp,0);
+  SetLength(tmp, 0);
   Finalize(tmp);
-  tmp:=nil;
+  tmp := nil;
 end;
 
 procedure TCGrayscaleImage.MinFilter(h, w: word);
@@ -426,10 +409,10 @@ begin
   tmp := nil;
 
   self.Copy(GSIR);
-  GSIR.Free;
-    SetLength(tmp,0);
+  GSIR.FreeGrayscaleImage;
+  SetLength(tmp, 0);
   Finalize(tmp);
-  tmp:=nil;
+  tmp := nil;
 end;
 
 procedure TCGrayscaleImage.MiddlePointFilter(h, w: word);
@@ -468,10 +451,10 @@ begin
   tmp := nil;
 
   self.Copy(GSIR);
-  GSIR.Free;
-    SetLength(tmp,0);
+  GSIR.FreeGrayscaleImage;
+  SetLength(tmp, 0);
   Finalize(tmp);
-  tmp:=nil;
+  tmp := nil;
 end;
 
 procedure TCGrayscaleImage.TruncatedAVGFilter(h, w, d: word);
@@ -513,10 +496,10 @@ begin
   tmp := nil;
 
   self.Copy(GSIR);
-  GSIR.Free;
-    SetLength(tmp,0);
+  GSIR.FreeGrayscaleImage;
+  SetLength(tmp, 0);
   Finalize(tmp);
-  tmp:=nil;
+  tmp := nil;
 end;
 
 procedure TCGrayscaleImage.PrevittFilter(AddToOriginal: boolean);
@@ -534,9 +517,7 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + PrevittMaskX[fi + 1 + 1, fj + 1 + 1] *
-            self.GetPixelValue(i + fi, j + fj) + PrevittMaskY
-            [fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + PrevittMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + PrevittMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -547,7 +528,7 @@ begin
     end;
 
   self.Copy(GSIR);
-  GSIR.Free;
+  GSIR.FreeGrayscaleImage;
 end;
 
 procedure TCGrayscaleImage.SobelFilter(AddToOriginal: boolean);
@@ -565,9 +546,7 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + SobelMaskX[fi + 1 + 1, fj + 1 + 1] *
-            self.GetPixelValue(i + fi, j + fj) + SobelMaskY[fi + 1 + 1,
-            fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + SobelMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SobelMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -578,7 +557,7 @@ begin
     end;
 
   self.Copy(GSIR);
-  GSIR.Free;
+  GSIR.FreeGrayscaleImage;
 end;
 
 procedure TCGrayscaleImage.SharrFilter(AddToOriginal: boolean);
@@ -596,9 +575,7 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + SharrMaskX[fi + 1 + 1, fj + 1 + 1] *
-            self.GetPixelValue(i + fi, j + fj) + SharrMaskY[fi + 1 + 1,
-            fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
+          response := response + SharrMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SharrMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] + response;
       GSIR.Pixels[i, j] := response;
@@ -609,7 +586,7 @@ begin
     end;
 
   self.Copy(GSIR);
-  GSIR.Free;
+  GSIR.FreeGrayscaleImage;
 end;
 
 procedure TCGrayscaleImage.LaplaceFilter(AddToOriginal: boolean);
@@ -627,8 +604,7 @@ begin
       response := 0;
       for fi := -1 to 1 do
         for fj := -1 to 1 do
-          response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] *
-            self.GetPixelValue(i + fi, j + fj);
+          response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
         response := self.Pixels[i, j] - response;
       GSIR.Pixels[i, j] := response;
@@ -639,7 +615,7 @@ begin
     end;
 
   self.Copy(GSIR);
-  GSIR.Free;
+  GSIR.FreeGrayscaleImage;
 end;
 
 procedure TCGrayscaleImage.LinearTransform(k, b: double);
@@ -788,3 +764,4 @@ begin
 end;
 
 end.
+

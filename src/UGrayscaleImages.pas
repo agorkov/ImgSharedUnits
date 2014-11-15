@@ -54,7 +54,7 @@ type
 implementation
 
 uses
-  Math;
+  Math, SysUtils;
 
 const
   LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
@@ -109,11 +109,15 @@ begin
   begin
     for i := 0 to self.Height - 1 do
     begin
-      SetLength(self.Pixels[i], 0);
+      SetLength(
+        self.Pixels[i],
+        0);
       Finalize(self.Pixels[i]);
       self.Pixels[i] := nil;
     end;
-    SetLength(self.Pixels, 0);
+    SetLength(
+      self.Pixels,
+      0);
     Finalize(self.Pixels);
     self.Pixels := nil;
   end;
@@ -125,10 +129,14 @@ var
 begin
   if (self.Height > 0) and (self.Width > 0) then
   begin
-    SetLength(self.Pixels, self.Height);
+    SetLength(
+      self.Pixels,
+      self.Height);
     for i := 0 to self.Height - 1 do
     begin
-      SetLength(self.Pixels[i], self.Width);
+      SetLength(
+        self.Pixels[i],
+        self.Width);
       for j := 0 to self.Width - 1 do
         self.Pixels[i, j] := 0;
     end;
@@ -218,9 +226,13 @@ var
   maxDist, maskWeigth: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(Mask, 2 * h + 2);
+  SetLength(
+    Mask,
+    2 * h + 2);
   for i := 1 to 2 * h + 1 do
-    SetLength(Mask[i], 2 * w + 2);
+    SetLength(
+      Mask[i],
+      2 * w + 2);
   for i := -h to h do
     for j := -w to w do
       Mask[i + h + 1, j + w + 1] := sqrt(sqr(i) + sqr(j));
@@ -245,7 +257,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(Mask, 0);
+  SetLength(
+    Mask,
+    0);
   Finalize(Mask);
   Mask := nil;
 end;
@@ -266,7 +280,9 @@ begin
       for fi := -h to h do
         for fj := -w to w do
           p := p * self.GetPixelValue(i + fi, j + fj);
-      p := power(p, 1 / ((2 * h + 1) * (2 * w + 1)));
+      p := power(
+        p,
+        1 / ((2 * h + 1) * (2 * w + 1)));
       GSIR.Pixels[i, j] := p;
     end;
 
@@ -275,7 +291,9 @@ begin
 end;
 
 procedure TCGrayscaleImage.MedianFilter(h, w: word);
-  function FindMedian(N: word; var Arr: array of double): double;
+  function FindMedian(
+    N: word;
+    var Arr: array of double): double;
   var
     L, R, k, i, j: word;
     w, x: double;
@@ -318,7 +336,9 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(
+    tmp,
+    (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
@@ -328,15 +348,21 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(i + fi, j + fj);
+          tmp[k] := self.GetPixelValue(
+            i + fi,
+            j + fj);
         end;
-      GSIR.Pixels[i, j] := FindMedian((2 * h + 1) * (2 * w + 1), tmp);
+      GSIR.Pixels[i, j] := FindMedian(
+        (2 * h + 1) * (2 * w + 1),
+        tmp);
     end;
   tmp := nil;
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(tmp, 0);
+  SetLength(
+    tmp,
+    0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -351,7 +377,9 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(
+    tmp,
+    (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
@@ -361,7 +389,9 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(i + fi, j + fj);
+          tmp[k] := self.GetPixelValue(
+            i + fi,
+            j + fj);
         end;
       Max := tmp[1];
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
@@ -373,7 +403,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(tmp, 0);
+  SetLength(
+    tmp,
+    0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -388,7 +420,9 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(
+    tmp,
+    (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
@@ -398,7 +432,9 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(i + fi, j + fj);
+          tmp[k] := self.GetPixelValue(
+            i + fi,
+            j + fj);
         end;
       Min := tmp[1];
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
@@ -410,7 +446,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(tmp, 0);
+  SetLength(
+    tmp,
+    0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -425,7 +463,9 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(
+    tmp,
+    (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
@@ -435,7 +475,9 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(i + fi, j + fj);
+          tmp[k] := self.GetPixelValue(
+            i + fi,
+            j + fj);
         end;
       Min := tmp[1];
       Max := tmp[1];
@@ -452,7 +494,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(tmp, 0);
+  SetLength(
+    tmp,
+    0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -468,7 +512,9 @@ var
   sum: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(
+    tmp,
+    (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
@@ -478,7 +524,9 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(i + fi, j + fj);
+          tmp[k] := self.GetPixelValue(
+            i + fi,
+            j + fj);
         end;
       for k := 1 to (2 * h + 1) * (2 * w + 1) - 1 do
         for L := k + 1 to (2 * h + 1) * (2 * w + 1) do
@@ -497,7 +545,9 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(tmp, 0);
+  SetLength(
+    tmp,
+    0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -720,8 +770,12 @@ begin
 
   for i := 0 to k do
   begin
-    BM.Canvas.MoveTo(i, BM.Height);
-    BM.Canvas.LineTo(i, BM.Height - round(h[i] * 100 / Max));
+    BM.Canvas.MoveTo(
+      i,
+      BM.Height);
+    BM.Canvas.LineTo(
+      i,
+      BM.Height - round(h[i] * 100 / Max));
   end;
   Histogram := BM;
 end;
@@ -730,16 +784,22 @@ procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
 var
   i, j: word;
   p: TColorPixel;
+  line: pByteArray;
 begin
   p := TColorPixel.Create;
   self.SetHeight(BM.Height);
   self.SetWidth(BM.Width);
   for i := 0 to self.Height - 1 do
+  begin
+    line := BM.ScanLine[i];
     for j := 0 to self.Width - 1 do
     begin
-      p.SetFullColor(BM.Canvas.Pixels[j, i]);
+      p.SetRed(line[3 * j + 2] / 255);
+      p.SetGreen(line[3 * j + 1] / 255);
+      p.SetBlue(line[3 * j + 0] / 255);
       self.Pixels[i, j] := p.GetColorChannel(ccY);
     end;
+  end;
   p.Free;
 end;
 
@@ -748,17 +808,24 @@ var
   i, j: word;
   BM: TBitmap;
   p: TColorPixel;
+  line: pByteArray;
 begin
   p := TColorPixel.Create;
   BM := TBitmap.Create;
+  BM.PixelFormat := pf24bit;
   BM.Height := self.Height;
   BM.Width := self.Width;
   for i := 0 to self.Height - 1 do
+  begin
+    line := BM.ScanLine[i];
     for j := 0 to self.Width - 1 do
     begin
       p.SetRGB(self.Pixels[i, j], self.Pixels[i, j], self.Pixels[i, j]);
-      BM.Canvas.Pixels[j, i] := p.GetFullColor;
+      line[3 * j + 2] := round(p.GetRed * 255);
+      line[3 * j + 1] := round(p.GetGreen * 255);
+      line[3 * j + 0] := round(p.GetBlue * 255);
     end;
+  end;
   SaveToBitMap := BM;
   p.Free;
 end;

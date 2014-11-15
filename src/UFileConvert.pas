@@ -5,54 +5,118 @@ interface
 uses
   SysUtils, VCL.Graphics;
 
-function LoadFile(const FileName: TFileName): TBitmap;
-procedure JPEGtoBMP(const FileName: TFileName);
+const
+  SUPPORTED_FORMATS = '*.bmp;*.jpg;*.jpeg;*.png';
+
+function LoadFromFile(const FileName: TFileName): TBitmap;
+procedure SaveToFile(
+  const BM: TBitmap;
+  const FileName: string);
 
 implementation
 
 uses
-  JPEG;
+  JPEG, PNGImage;
 
-procedure JPEGtoBMP(const FileName: TFileName);
+function LoadFromFile(const FileName: TFileName): TBitmap;
 var
-  JPEG: TJPEGImage;
-  bmp: TBitmap;
+  isConvertedToBitMap: boolean;
+  Ext: string;
+  BM: TBitmap;
+  jpg: TJPEGImage;
+  PNG: TPNGImage;
 begin
-  JPEG := TJPEGImage.Create;
-  try
-    JPEG.CompressionQuality := 100;
-    JPEG.LoadFromFile(FileName);
-    bmp := TBitmap.Create;
+  isConvertedToBitMap := false;
+  BM := TBitmap.Create;
+
+  Ext := ExtractFileExt(FileName);
+  Ext := UpperCase(Ext);
+
+  if (Ext = '.JPG') or (Ext = '.JPEG') then
     try
-      bmp.Assign(JPEG);
-      bmp.SaveToFile(ChangeFileExt(FileName, '.bmp'));
-    finally
-      bmp.Free
+      jpg := TJPEGImage.Create();
+      jpg.LoadFromFile(FileName);
+      BM.Assign(jpg);
+      jpg.Free;
+      isConvertedToBitMap := true;
+    except
+      isConvertedToBitMap := false;
     end;
-  finally
-    JPEG.Free
-  end;
+
+  if (Ext = '.PNG') then
+    try
+      PNG := TPNGImage.Create();
+      PNG.LoadFromFile(FileName);
+      BM.Assign(PNG);
+      PNG.Free;
+      isConvertedToBitMap := true;
+    except
+      isConvertedToBitMap := false;
+    end;
+
+  if Ext = '.BMP' then
+    try
+      BM.LoadFromFile(FileName);
+      isConvertedToBitMap := true;
+    except
+      isConvertedToBitMap := false;
+    end;
+
+  if isConvertedToBitMap then
+  begin
+    BM.PixelFormat := pf24bit;
+    LoadFromFile := BM;
+  end
+  else
+    LoadFromFile := nil;
 end;
 
-function LoadFile(const FileName: TFileName): TBitmap;
+procedure SaveToFile(
+  const BM: TBitmap;
+  const FileName: string);
 var
-  str: string;
-  fl: boolean;
-  BM: TBitmap;
+  Ext: string;
+  jpg: TJPEGImage;
+  PNG: TPNGImage;
+  isSaved: boolean;
 begin
-  BM := TBitmap.Create;
-  fl := false;
-  str := ANSIUpperCase(FileName);
-  if (ExtractFileExt(str) = '.JPG') or (ExtractFileExt(str) = '.JPEG') then
+  Ext := ExtractFileExt(FileName);
+  Ext := UpperCase(Ext);
+
+  if (Ext = '.JPG') or (Ext = '.JPEG') then
+    try
+      jpg := TJPEGImage.Create();
+      jpg.Assign(BM);
+      jpg.SaveToFile(FileName);
+      jpg.Free;
+      isSaved := true;
+    except
+      isSaved := false;
+    end;
+
+  if (Ext = '.PNG') then
+    try
+      PNG := TPNGImage.Create();
+      PNG.Assign(BM);
+      PNG.SaveToFile(FileName);
+      PNG.Free;
+      isSaved := true;
+    except
+      isSaved := false;
+    end;
+
+  if Ext = '.BMP' then
+    try
+      BM.SaveToFile(FileName);
+      isSaved := true;
+    except
+      isSaved := false;
+    end;
+
+  if not isSaved then
   begin
-    JPEGtoBMP(str);
-    str := ChangeFileExt(str, '.bmp');
-    fl := true;
+    BM.SaveToFile(FileName + '.BMP');
   end;
-  BM.LoadFromFile(str);
-  if fl then
-    DeleteFile(str);
-  LoadFile := BM;
 end;
 
 end.

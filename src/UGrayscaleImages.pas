@@ -3,7 +3,7 @@ unit UGrayscaleImages;
 interface
 
 uses
-  VCL.Graphics, UPixelConvert;
+  VCL.Graphics;
 
 type
   /// Монохромное изображение
@@ -54,7 +54,7 @@ type
 implementation
 
 uses
-  Math, SysUtils;
+  Math, SysUtils, UPixelConvert;
 
 const
   LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
@@ -820,7 +820,10 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.Width - 1 do
     begin
-      p.SetRGB(self.Pixels[i, j], self.Pixels[i, j], self.Pixels[i, j]);
+      p.SetRGB(
+        self.Pixels[i, j],
+        self.Pixels[i, j],
+        self.Pixels[i, j]);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);

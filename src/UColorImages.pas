@@ -10,11 +10,11 @@ type
   TCColorImage = class
   private
     Height, Width: word; // Геометрические размеры изображения
-
-    procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
+    procedure FreePixels; // Освобождение пикселей изображения
   public
     Pixels: array of array of TColorPixel; // Пиксели изображения
+
     constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
     destructor FreeColorImage; // Стандартный деструктор
@@ -65,8 +65,6 @@ type
     procedure LaplaceFilter(
       Channel: TEColorChannel;
       AddToOriginal: boolean); // Фильтр Лапласа
-    procedure HistogramEqualization(Channel: TEColorChannel); // Эквализация гистограммы
-    function Histogram(Channel: TEColorChannel): TBitmap; // Получение гистограммы
 
     procedure LinearTransform(
       Channel: TEColorChannel;
@@ -78,8 +76,13 @@ type
       Channel: TEColorChannel;
       c, gamma: double); // Гамма-коррекция
 
+    procedure HistogramEqualization(Channel: TEColorChannel); // Эквализация гистограммы
+    function Histogram(Channel: TEColorChannel): TBitmap; // Получение гистограммы
+
     procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+
+    function ConvertToGrayscale: TCGrayscaleImage;
   end;
 
 implementation
@@ -504,6 +507,20 @@ begin
     end;
   end;
   SaveToBitMap := BM;
+end;
+
+function TCColorImage.ConvertToGrayscale: TCGrayscaleImage;
+var
+  GSI: TCGrayscaleImage;
+  i, j: word;
+begin
+  GSI := TCGrayscaleImage.Create;
+  GSI.SetHeight(self.Height);
+  GSI.SetWidth(self.Width);
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      GSI.Pixels[i, j] := self.Pixels[i, j].GetY;
+  ConvertToGrayscale := GSI;
 end;
 
 end.

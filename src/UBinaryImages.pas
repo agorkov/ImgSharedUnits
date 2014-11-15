@@ -3,7 +3,7 @@ unit UBinaryImages;
 interface
 
 uses
-  VCL.Graphics, UGrayscaleImages;
+  VCL.Graphics;
 
 type
   /// Бинарное изображение
@@ -25,9 +25,6 @@ type
     function GetWidth: word; // Получить высоту изображения
 
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
-    procedure ThresoldBinarization(
-      GSI: TCGrayscaleImage;
-      Thresold: double);
   end;
 
 implementation
@@ -161,22 +158,6 @@ begin
   end;
   SaveToBitMap := BM;
   p.Free;
-end;
-
-procedure TCBinaryImage.ThresoldBinarization(
-  GSI: TCGrayscaleImage;
-  Thresold: double);
-var
-  i, j: word;
-begin
-  self.SetHeight(GSI.GetHeight);
-  self.SetWidth(GSI.GetWidth);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
-      if GSI.Pixels[i, j] > Thresold then
-        self.Pixels[i, j] := true
-      else
-        self.Pixels[i, j] := false;
 end;
 
 end.

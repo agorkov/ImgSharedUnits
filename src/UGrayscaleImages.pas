@@ -3,7 +3,7 @@ unit UGrayscaleImages;
 interface
 
 uses
-  VCL.Graphics;
+  VCL.Graphics, UBinaryImages;
 
 type
   /// Монохромное изображение
@@ -47,14 +47,15 @@ type
     procedure LogTransform(c: double); // Логарифмическое преобразование
     procedure GammaTransform(c, gamma: double); // Гамма-коррекция
 
-    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+
+    function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
   end;
 
 implementation
 
 uses
-  Math, SysUtils, UPixelConvert;
+  Math, SysUtils, UPixelConvert, UColorImages;
 
 const
   LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
@@ -76,11 +77,15 @@ begin
 end;
 
 constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
+var
+  RGB: TCColorImage;
 begin
   inherited;
   self.Height := 0;
   self.Width := 0;
-  self.LoadFromBitMap(BM);
+  RGB := TCColorImage.CreateAndLoadFromBitmap(BM);
+  self := RGB.ConvertToGrayscale;
+  RGB.FreeColorImage;
 end;
 
 constructor TCGrayscaleImage.CreateCopy(From: TCGrayscaleImage);
@@ -780,29 +785,6 @@ begin
   Histogram := BM;
 end;
 
-procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
-var
-  i, j: word;
-  p: TColorPixel;
-  line: pByteArray;
-begin
-  p := TColorPixel.Create;
-  self.SetHeight(BM.Height);
-  self.SetWidth(BM.Width);
-  for i := 0 to self.Height - 1 do
-  begin
-    line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
-    begin
-      p.SetRed(line[3 * j + 2] / 255);
-      p.SetGreen(line[3 * j + 1] / 255);
-      p.SetBlue(line[3 * j + 0] / 255);
-      self.Pixels[i, j] := p.GetColorChannel(ccY);
-    end;
-  end;
-  p.Free;
-end;
-
 function TCGrayscaleImage.SaveToBitMap: TBitmap;
 var
   i, j: word;
@@ -831,6 +813,23 @@ begin
   end;
   SaveToBitMap := BM;
   p.Free;
+end;
+
+function TCGrayscaleImage.ThresoldBinarization(Thresold: double): TCBinaryImage;
+var
+  BI: TCBinaryImage;
+  i, j: word;
+begin
+  BI := TCBinaryImage.Create;
+  BI.SetHeight(self.Height);
+  BI.SetWidth(self.Width);
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      if self.Pixels[i, j] > Thresold then
+        BI.Pixels[i, j] := true
+      else
+        BI.Pixels[i, j] := false;
+  ThresoldBinarization := BI;
 end;
 
 end.

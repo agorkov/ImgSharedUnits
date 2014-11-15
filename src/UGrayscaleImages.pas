@@ -47,6 +47,7 @@ type
     procedure LogTransform(c: double); // Логарифмическое преобразование
     procedure GammaTransform(c, gamma: double); // Гамма-коррекция
 
+    procedure LoadFromBitMap(BM: TBitmap);
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
 
     function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
@@ -76,16 +77,35 @@ begin
   self.Width := 0;
 end;
 
-constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
+procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
 var
-  RGB: TCColorImage;
+  i, j: word;
+  p: TColorPixel;
+  line: pByteArray;
+begin
+  p := TColorPixel.Create;
+  self.SetHeight(BM.Height);
+  self.SetWidth(BM.Width);
+  for i := 0 to self.Height - 1 do
+  begin
+    line := BM.ScanLine[i];
+    for j := 0 to self.Width - 1 do
+    begin
+      p.SetRed(line[3 * j + 2] / 255);
+      p.SetGreen(line[3 * j + 1] / 255);
+      p.SetBlue(line[3 * j + 0] / 255);
+      self.Pixels[i, j] := p.GetColorChannel(ccY);
+    end;
+  end;
+  p.Free;
+end;
+
+constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
 begin
   inherited;
   self.Height := 0;
   self.Width := 0;
-  RGB := TCColorImage.CreateAndLoadFromBitmap(BM);
-  self := RGB.ConvertToGrayscale;
-  RGB.FreeColorImage;
+  self.LoadFromBitMap(BM);
 end;
 
 constructor TCGrayscaleImage.CreateCopy(From: TCGrayscaleImage);

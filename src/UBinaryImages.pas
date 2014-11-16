@@ -24,6 +24,8 @@ type
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
     function GetWidth: word; // Получить высоту изображения
 
+    procedure Invert;
+
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
   end;
 
@@ -143,14 +145,14 @@ begin
     begin
       if self.Pixels[i, j] then
         p.SetRGB(
-          1,
-          1,
-          1)
+          0,
+          0,
+          0)
       else
         p.SetRGB(
-          0,
-          0,
-          0);
+          1,
+          1,
+          1);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -158,6 +160,15 @@ begin
   end;
   SaveToBitMap := BM;
   p.Free;
+end;
+
+procedure TCBinaryImage.Invert;
+var
+  i, j: word;
+begin
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      self.Pixels[i, j] := not self.Pixels[i, j];
 end;
 
 end.

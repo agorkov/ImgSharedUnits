@@ -51,6 +51,10 @@ type
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
 
     function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
+    function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage; // Пороговая бинаризация по диапазону
+    function BernsenBinarization(
+      r: word;
+      ContrastThresold: double): TCBinaryImage; // Бинаризация Бернсена
   end;
 
 implementation
@@ -320,17 +324,17 @@ procedure TCGrayscaleImage.MedianFilter(h, w: word);
     N: word;
     var Arr: array of double): double;
   var
-    L, R, k, i, j: word;
+    L, r, k, i, j: word;
     w, x: double;
   begin
     L := 1;
-    R := N;
+    r := N;
     k := (N div 2) + 1;
-    while L < R - 1 do
+    while L < r - 1 do
     begin
       x := Arr[k];
       i := L;
-      j := R;
+      j := r;
       repeat
         while Arr[i] < x do
           i := i + 1;
@@ -348,7 +352,7 @@ procedure TCGrayscaleImage.MedianFilter(h, w: word);
       if j < k then
         L := i;
       if k < i then
-        R := j;
+        r := j;
     end;
     FindMedian := Arr[k];
   end;
@@ -850,6 +854,57 @@ begin
       else
         BI.Pixels[i, j] := false;
   ThresoldBinarization := BI;
+end;
+
+function TCGrayscaleImage.ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage;
+var
+  BI: TCBinaryImage;
+  i, j: word;
+begin
+  BI := TCBinaryImage.Create;
+  BI.SetHeight(self.Height);
+  BI.SetWidth(self.Width);
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      if (self.Pixels[i, j] > Thresold1) and (self.Pixels[i, j] < Thresold2) then
+        BI.Pixels[i, j] := true
+      else
+        BI.Pixels[i, j] := false;
+  ThresoldInervalBinarization := BI;
+end;
+
+function TCGrayscaleImage.BernsenBinarization(
+  r: word;
+  ContrastThresold: double): TCBinaryImage;
+var
+  BI: TCBinaryImage;
+  i, j, internali, internalj: word;
+  Imin, Imax, IAvg, localContrast: double;
+begin
+  BI := TCBinaryImage.Create;
+  BI.SetHeight(self.Height);
+  BI.SetWidth(self.Width);
+  for i := r to self.Height - 1 - r do
+    for j := r to self.Width - 1 - r do
+    begin
+      Imin := 1;
+      Imax := 0;
+      for internali := i - r to i + r do
+        for internalj := j - r to j + r do
+        begin
+          if self.Pixels[internali, internalj] > Imax then
+            Imax := self.Pixels[internali, internalj];
+          if self.Pixels[internali, internalj] < Imin then
+            Imin := self.Pixels[internali, internalj];
+        end;
+      localContrast := Imax - Imin;
+      IAvg := (Imax - Imin) / 2;
+      if localContrast < ContrastThresold then
+        BI.Pixels[i, j] := IAvg >= 0.5
+      else
+        BI.Pixels[i, j] := self.Pixels[i, j] >= IAvg;
+    end;
+  BernsenBinarization := BI;
 end;
 
 end.

@@ -83,8 +83,6 @@ type
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
 
     function ConvertToGrayscale: TCGrayscaleImage;
-
-    function GetHash: string;
   end;
 
 implementation
@@ -523,46 +521,6 @@ begin
     for j := 0 to self.Width - 1 do
       GSI.Pixels[i, j] := self.Pixels[i, j].GetY;
   ConvertToGrayscale := GSI;
-end;
-
-function TCColorImage.GetHash: string;
-const
-  ImgHashH = 8;
-  ImgHashW = 8;
-var
-  BMOrigin, BMMin: TBitmap;
-  GSI: TCGrayscaleImage;
-  BI: TCBinaryImage;
-  i, j: word;
-  avg: double;
-  str: string;
-begin
-  BMOrigin := self.SaveToBitMap;
-  BMMin := TBitmap.Create;
-  BMMin.Height := ImgHashH;
-  BMMin.Width := ImgHashW;
-  BMMin.Canvas.StretchDraw(
-    Rect(0, 0, ImgHashW - 1, ImgHashH - 1), // TODO: Не уверен насчёт того, что передаётся первым параметром ширина или высота
-    BMOrigin);
-  BMOrigin.Free;
-  GSI := TCGrayscaleImage.CreateAndLoadFromBitmap(BMMin);
-  BMMin.Free;
-  avg := 0;
-  for i := 0 to GSI.GetHeight - 1 do
-    for j := 0 to GSI.GetWidth - 1 do
-      avg := avg + GSI.Pixels[i, j];
-  avg := avg / (ImgHashH * ImgHashW);
-  BI := GSI.ThresoldBinarization(avg);
-  GSI.FreeGrayscaleImage;
-  str := '';
-  for i := 0 to BI.GetHeight - 1 do
-    for j := 0 to BI.GetWidth - 1 do
-      if BI.Pixels[i, j] then
-        str := str + '1'
-      else
-        str := str + '0';
-  BI.FreeBinaryImage;
-  GetHash := str;
 end;
 
 end.

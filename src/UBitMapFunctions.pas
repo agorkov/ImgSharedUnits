@@ -14,6 +14,7 @@ procedure SaveToFile(
   const FileName: string);
 function GetHashHex(BMOrigin: TBitmap): string;
 function GetHashInt64(BMOrigin: TBitmap): int64;
+function CompareHashes(Hash1, Hash2: int64): double;
 function CompareImages(BM1, BM2: TBitmap): double;
 
 implementation
@@ -213,14 +214,12 @@ begin
   GetHashInt64 := StrToInt64('0x' + GetHashHex(BMOrigin));
 end;
 
-function CompareImages(BM1, BM2: TBitmap): double;
+function CompareHashes(Hash1, Hash2: int64): double;
 var
-  h1, h2, r: int64;
+  r: int64;
   count: byte;
 begin
-  h1 := UBitMapFunctions.GetHashInt64(BM1);
-  h2 := UBitMapFunctions.GetHashInt64(BM2);
-  r := not(h1 xor h2);
+  r := not(Hash1 xor Hash2);
   count := 0;
   while r <> 0 do
   begin
@@ -228,7 +227,18 @@ begin
       count := count + 1;
     r := r shr 1;
   end;
-  CompareImages := count / 64;
+  CompareHashes := count / 64;
+end;
+
+function CompareImages(BM1, BM2: TBitmap): double;
+var
+  h1, h2: int64;
+begin
+  h1 := UBitMapFunctions.GetHashInt64(BM1);
+  h2 := UBitMapFunctions.GetHashInt64(BM2);
+  CompareImages := CompareHashes(
+    h1,
+    h2);
 end;
 
 end.

@@ -24,15 +24,15 @@ type
   /// Описание цвета. В зависимости от выбранной вариантной части, цвет представляется в одном из поддерживаемых цветовых пространств
   TRColorChannels = record
     case TEColorSpace of
-    csFullColor: // Стандартный TColor
+      csFullColor: // Стандартный TColor
         (FullColor: TColor);
-    csRGB: // Аддитивный цветовой куб RGB
+      csRGB: // Аддитивный цветовой куб RGB
         (ccRed, ccGreen, ccBlue: double);
-    csCMYK: // Субтрактивное цветовое пространство (субстративный аналог RGB)
+      csCMYK: // Субтрактивное цветовое пространство (субстративный аналог RGB)
         (ccCyan, ccMagenta, ccYellow, ccKeyColor: double);
-    csHSI: // Пространство тон-насыщенность-интенсивность
+      csHSI: // Пространство тон-насыщенность-интенсивность
         (ccHue, ccSaturation, ccIntensity: double);
-    csYIQ: // Цветоразностная модель
+      csYIQ: // Цветоразностная модель
         (ccY, ccI, ccQ: double);
   end;
 
@@ -94,7 +94,9 @@ type
     function GetQ: double; // Получить Q составляющую
     procedure SetYIQ(Y, I, Q: double); // Задать все параметры YIQ
 
-    procedure SetColorChannel(Channel: TEColorChannel; value: double); // Задать значение указанного цветового канала
+    procedure SetColorChannel(
+      Channel: TEColorChannel;
+      value: double); // Задать значение указанного цветового канала
     function GetColorChannel(Channel: TEColorChannel): double; // Получить значение указанного цветового канала
   end;
 
@@ -118,7 +120,10 @@ begin
     self.ColorChannels.ccGreen := 0;
   if self.ColorChannels.ccBlue < 0 then
     self.ColorChannels.ccBlue := 0;
-  self.ColorChannels.FullColor := Winapi.Windows.RGB(round(self.ColorChannels.ccRed * 255), round(self.ColorChannels.ccGreen * 255), round(self.ColorChannels.ccBlue * 255));
+  self.ColorChannels.FullColor := Winapi.Windows.RGB(
+    round(self.ColorChannels.ccRed * 255),
+    round(self.ColorChannels.ccGreen * 255),
+    round(self.ColorChannels.ccBlue * 255));
 end;
 
 procedure TColorPixel.FullColorToRGB;
@@ -258,6 +263,21 @@ begin
                 self.ColorChannels.ccGreen := I;
                 self.ColorChannels.ccBlue := I;
               end;
+  /// При некорректных цветовых преобразованиях возможны ситуации, когда RGB-цвета
+  /// не будут попадать в диапазон [0;1]
+  if self.ColorChannels.ccRed > 1 then
+    self.ColorChannels.ccRed := 1;
+  if self.ColorChannels.ccGreen > 1 then
+    self.ColorChannels.ccGreen := 1;
+  if self.ColorChannels.ccBlue > 1 then
+    self.ColorChannels.ccBlue := 1;
+
+  if self.ColorChannels.ccRed < 0 then
+    self.ColorChannels.ccRed := 0;
+  if self.ColorChannels.ccGreen < 0 then
+    self.ColorChannels.ccGreen := 0;
+  if self.ColorChannels.ccBlue < 0 then
+    self.ColorChannels.ccBlue := 0;
 end;
 
 procedure TColorPixel.RGBToYIQ;
@@ -298,18 +318,28 @@ begin
   if From <> Target then
   begin
     case From of
-    csFullColor: FullColorToRGB;
-    csRGB:;
-    csCMYK: CMYKToRGB;
-    csHSI: HSIToRGB;
-    csYIQ: YIQToRGB;
+      csFullColor:
+        FullColorToRGB;
+      csRGB:
+        ;
+      csCMYK:
+        CMYKToRGB;
+      csHSI:
+        HSIToRGB;
+      csYIQ:
+        YIQToRGB;
     end;
     case Target of
-    csFullColor: RGBToFullColor;
-    csRGB:;
-    csCMYK: RGBToCMYK;
-    csHSI: RGBToHSI;
-    csYIQ: RGBToYIQ;
+      csFullColor:
+        RGBToFullColor;
+      csRGB:
+        ;
+      csCMYK:
+        RGBToCMYK;
+      csHSI:
+        RGBToHSI;
+      csYIQ:
+        RGBToYIQ;
     end;
   end;
 end;
@@ -511,22 +541,37 @@ begin
   self.SetQ(Q);
 end;
 
-procedure TColorPixel.SetColorChannel(Channel: TEColorChannel; value: double);
+procedure TColorPixel.SetColorChannel(
+  Channel: TEColorChannel;
+  value: double);
 begin
   case Channel of
-  ccRed: self.SetRed(value);
-  ccGreen: self.SetGreen(value);
-  ccBlue: self.SetBlue(value);
-  ccCyan: self.SetCyan(value);
-  ccMagenta: self.SetMagenta(value);
-  ccYellow: self.SetYellow(value);
-  ccKeyColor: self.SetKeyColor(value);
-  ccHue: self.SetHue(value);
-  ccSaturation: self.SetSaturation(value);
-  ccIntensity: self.SetIntensity(value);
-  ccY: self.SetY(value);
-  ccI: self.SetI(value);
-  ccQ: self.SetQ(value);
+    ccRed:
+      self.SetRed(value);
+    ccGreen:
+      self.SetGreen(value);
+    ccBlue:
+      self.SetBlue(value);
+    ccCyan:
+      self.SetCyan(value);
+    ccMagenta:
+      self.SetMagenta(value);
+    ccYellow:
+      self.SetYellow(value);
+    ccKeyColor:
+      self.SetKeyColor(value);
+    ccHue:
+      self.SetHue(value);
+    ccSaturation:
+      self.SetSaturation(value);
+    ccIntensity:
+      self.SetIntensity(value);
+    ccY:
+      self.SetY(value);
+    ccI:
+      self.SetI(value);
+    ccQ:
+      self.SetQ(value);
   end;
 end;
 
@@ -536,19 +581,32 @@ var
 begin
   R := 0;
   case Channel of
-  ccRed: R := self.GetRed;
-  ccGreen: R := self.GetGreen;
-  ccBlue: R := self.GetBlue;
-  ccCyan: R := self.GetCyan;
-  ccMagenta: R := self.GetMagenta;
-  ccYellow: R := self.GetYellow;
-  ccKeyColor: R := self.GetKeyColor;
-  ccHue: R := self.GetHue;
-  ccSaturation: R := self.GetSaturation;
-  ccIntensity: R := self.GetIntensity;
-  ccY: R := self.GetY;
-  ccI: R := self.GetI;
-  ccQ: R := self.GetQ;
+    ccRed:
+      R := self.GetRed;
+    ccGreen:
+      R := self.GetGreen;
+    ccBlue:
+      R := self.GetBlue;
+    ccCyan:
+      R := self.GetCyan;
+    ccMagenta:
+      R := self.GetMagenta;
+    ccYellow:
+      R := self.GetYellow;
+    ccKeyColor:
+      R := self.GetKeyColor;
+    ccHue:
+      R := self.GetHue;
+    ccSaturation:
+      R := self.GetSaturation;
+    ccIntensity:
+      R := self.GetIntensity;
+    ccY:
+      R := self.GetY;
+    ccI:
+      R := self.GetI;
+    ccQ:
+      R := self.GetQ;
   end;
   GetColorChannel := R;
 end;

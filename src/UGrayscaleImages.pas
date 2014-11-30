@@ -849,7 +849,7 @@ begin
   BI.SetWidth(self.Width);
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
-      if self.Pixels[i, j] > Thresold then
+      if self.Pixels[i, j] <= Thresold then
         BI.Pixels[i, j] := true
       else
         BI.Pixels[i, j] := false;
@@ -866,7 +866,7 @@ begin
   BI.SetWidth(self.Width);
   for i := 0 to self.Height - 1 do
     for j := 0 to self.Width - 1 do
-      if (self.Pixels[i, j] > Thresold1) and (self.Pixels[i, j] < Thresold2) then
+      if (self.Pixels[i, j] >= Thresold1) and (self.Pixels[i, j] <= Thresold2) then
         BI.Pixels[i, j] := true
       else
         BI.Pixels[i, j] := false;

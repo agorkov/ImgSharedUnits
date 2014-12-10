@@ -87,6 +87,7 @@ var
   p: TColorPixel;
   line: pByteArray;
 begin
+  BM.PixelFormat:=pf24bit;
   p := TColorPixel.Create;
   self.SetHeight(BM.Height);
   self.SetWidth(BM.Width);

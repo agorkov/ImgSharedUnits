@@ -139,6 +139,21 @@ begin
   self.ColorChannels.ccGreen := tmp / 255;
   tmp := Color shr 16;
   self.ColorChannels.ccBlue := tmp / 255;
+  /// При некорректных цветовых преобразованиях возможны ситуации, когда RGB-цвета
+  /// не будут попадать в диапазон [0;1]
+  if self.ColorChannels.ccRed > 1 then
+    self.ColorChannels.ccRed := 1;
+  if self.ColorChannels.ccGreen > 1 then
+    self.ColorChannels.ccGreen := 1;
+  if self.ColorChannels.ccBlue > 1 then
+    self.ColorChannels.ccBlue := 1;
+
+  if self.ColorChannels.ccRed < 0 then
+    self.ColorChannels.ccRed := 0;
+  if self.ColorChannels.ccGreen < 0 then
+    self.ColorChannels.ccGreen := 0;
+  if self.ColorChannels.ccBlue < 0 then
+    self.ColorChannels.ccBlue := 0;
 end;
 
 procedure TColorPixel.RGBToCMYK;
@@ -176,6 +191,21 @@ begin
   self.ColorChannels.ccRed := (1 - C) * (1 - K);
   self.ColorChannels.ccGreen := (1 - M) * (1 - K);
   self.ColorChannels.ccBlue := (1 - Y) * (1 - K);
+  /// При некорректных цветовых преобразованиях возможны ситуации, когда RGB-цвета
+  /// не будут попадать в диапазон [0;1]
+  if self.ColorChannels.ccRed > 1 then
+    self.ColorChannels.ccRed := 1;
+  if self.ColorChannels.ccGreen > 1 then
+    self.ColorChannels.ccGreen := 1;
+  if self.ColorChannels.ccBlue > 1 then
+    self.ColorChannels.ccBlue := 1;
+
+  if self.ColorChannels.ccRed < 0 then
+    self.ColorChannels.ccRed := 0;
+  if self.ColorChannels.ccGreen < 0 then
+    self.ColorChannels.ccGreen := 0;
+  if self.ColorChannels.ccBlue < 0 then
+    self.ColorChannels.ccBlue := 0;
 end;
 
 procedure TColorPixel.RGBToHSI;
@@ -308,6 +338,21 @@ begin
   self.ColorChannels.ccRed := Y + 0.956 * I + 0.621 * Q;
   self.ColorChannels.ccGreen := Y - 0.272 * I - 0.647 * Q;
   self.ColorChannels.ccBlue := Y - 1.107 * I + 1.706 * Q;
+  /// При некорректных цветовых преобразованиях возможны ситуации, когда RGB-цвета
+  /// не будут попадать в диапазон [0;1]
+  if self.ColorChannels.ccRed > 1 then
+    self.ColorChannels.ccRed := 1;
+  if self.ColorChannels.ccGreen > 1 then
+    self.ColorChannels.ccGreen := 1;
+  if self.ColorChannels.ccBlue > 1 then
+    self.ColorChannels.ccBlue := 1;
+
+  if self.ColorChannels.ccRed < 0 then
+    self.ColorChannels.ccRed := 0;
+  if self.ColorChannels.ccGreen < 0 then
+    self.ColorChannels.ccGreen := 0;
+  if self.ColorChannels.ccBlue < 0 then
+    self.ColorChannels.ccBlue := 0;
 end;
 
 procedure TColorPixel.ConvertTo(Target: TEColorSpace);

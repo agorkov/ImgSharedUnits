@@ -471,6 +471,7 @@ var
   i, j: word;
   line: pByteArray;
 begin
+  BM.PixelFormat:=pf24bit;
   self.Height := BM.Height;
   self.Width := BM.Width;
   self.InitPixels;

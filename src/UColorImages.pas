@@ -9,7 +9,14 @@ type
   /// Цветное изображение
   TCColorImage = class
   private
-    Height, Width: word; // Геометрические размеры изображения
+    ImgHeight: word; // Высота изображения
+    ImgWidth: word; // Ширина изображения
+
+    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
+    function GetHeight: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
+    function GetWidth: word; // Получить высоту изображения
+
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
     procedure FreePixels; // Освобождение пикселей изображения
   public
@@ -19,10 +26,8 @@ type
     constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
     destructor FreeColorImage; // Стандартный деструктор
 
-    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
-    function GetHeight: word; // Получить высоту изображения
-    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
-    function GetWidth: word; // Получить высоту изображения
+    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
+    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
 
     function GetChanel(Channel: TEColorChannel): TCGrayscaleImage; // Считать заданный цветовой канал как монохромное изображение
     procedure SetChannel(
@@ -93,15 +98,15 @@ uses
 constructor TCColorImage.Create;
 begin
   inherited;
-  self.Height := 0;
-  self.Width := 0;
+  self.ImgHeight := 0;
+  self.ImgWidth := 0;
 end;
 
 constructor TCColorImage.CreateAndLoadFromBitmap(BM: TBitmap);
 begin
   inherited;
-  self.Height := 0;
-  self.Width := 0;
+  self.ImgHeight := 0;
+  self.ImgWidth := 0;
   self.LoadFromBitMap(BM);
 end;
 
@@ -115,11 +120,11 @@ procedure TCColorImage.FreePixels;
 var
   i, j: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    for i := 0 to self.Height - 1 do
+    for i := 0 to self.ImgHeight - 1 do
     begin
-      for j := 0 to self.Width - 1 do
+      for j := 0 to self.ImgWidth - 1 do
         self.Pixels[i, j].Free;
       SetLength(
         self.Pixels[i],
@@ -139,17 +144,17 @@ procedure TCColorImage.InitPixels;
 var
   i, j: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
     SetLength(
       self.Pixels,
-      self.Height);
-    for i := 0 to self.Height - 1 do
+      self.ImgHeight);
+    for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
         self.Pixels[i],
-        self.Width);
-      for j := 0 to self.Width - 1 do
+        self.ImgWidth);
+      for j := 0 to self.ImgWidth - 1 do
       begin
         self.Pixels[i, j] := TColorPixel.Create;
         self.Pixels[i, j].SetFullColor(0);
@@ -161,25 +166,25 @@ end;
 procedure TCColorImage.SetHeight(newHeight: word);
 begin
   FreePixels;
-  self.Height := newHeight;
+  self.ImgHeight := newHeight;
   self.InitPixels;
 end;
 
 function TCColorImage.GetHeight: word;
 begin
-  GetHeight := self.Height;
+  GetHeight := self.ImgHeight;
 end;
 
 procedure TCColorImage.SetWidth(newWidth: word);
 begin
   FreePixels;
-  self.Width := newWidth;
+  self.ImgWidth := newWidth;
   self.InitPixels;
 end;
 
 function TCColorImage.GetWidth: word;
 begin
-  GetWidth := self.Width;
+  GetWidth := self.ImgWidth;
 end;
 
 function TCColorImage.GetChanel(Channel: TEColorChannel): TCGrayscaleImage;
@@ -188,10 +193,10 @@ var
   GS: TCGrayscaleImage;
 begin
   GS := TCGrayscaleImage.Create;
-  GS.SetHeight(self.Height);
-  GS.SetWidth(self.Width);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  GS.SetHeight(self.ImgHeight);
+  GS.SetWidth(self.ImgWidth);
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       GS.Pixels[i, j] := self.Pixels[i, j].GetColorChannel(Channel);
   GetChanel := GS;
 end;
@@ -202,13 +207,13 @@ procedure TCColorImage.SetChannel(
 var
   i, j: word;
 begin
-  if (self.Height <> GS.GetHeight) or (self.Width <> GS.GetWidth) then
+  if (self.ImgHeight <> GS.GetHeight) or (self.ImgWidth <> GS.GetWidth) then
   begin
     self.SetHeight(GS.GetHeight);
     self.SetWidth(GS.GetWidth);
   end;
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       self.Pixels[i, j].SetColorChannel(
         Channel,
         GS.Pixels[i, j]);
@@ -471,14 +476,14 @@ var
   i, j: word;
   line: pByteArray;
 begin
-  BM.PixelFormat:=pf24bit;
-  self.Height := BM.Height;
-  self.Width := BM.Width;
+  BM.PixelFormat := pf24bit;
+  self.ImgHeight := BM.Height;
+  self.ImgWidth := BM.Width;
   self.InitPixels;
-  for i := 0 to self.Height - 1 do
+  for i := 0 to self.ImgHeight - 1 do
   begin
     line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       self.Pixels[i, j].SetRed(line[j * 3 + 2] / 255);
       self.Pixels[i, j].SetGreen(line[j * 3 + 1] / 255);
@@ -495,12 +500,12 @@ var
 begin
   BM := TBitmap.Create;
   BM.PixelFormat := pf24bit;
-  BM.Height := self.Height;
-  BM.Width := self.Width;
-  for i := 0 to self.Height - 1 do
+  BM.Height := self.ImgHeight;
+  BM.Width := self.ImgWidth;
+  for i := 0 to self.ImgHeight - 1 do
   begin
     line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       line[j * 3 + 2] := round(self.Pixels[i, j].GetRed * 255);
       line[j * 3 + 1] := round(self.Pixels[i, j].GetGreen * 255);
@@ -516,10 +521,10 @@ var
   i, j: word;
 begin
   GSI := TCGrayscaleImage.Create;
-  GSI.SetHeight(self.Height);
-  GSI.SetWidth(self.Width);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  GSI.SetHeight(self.ImgHeight);
+  GSI.SetWidth(self.ImgWidth);
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       GSI.Pixels[i, j] := self.Pixels[i, j].GetY;
   ConvertToGrayscale := GSI;
 end;

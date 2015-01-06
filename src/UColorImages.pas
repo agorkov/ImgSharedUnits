@@ -11,6 +11,7 @@ type
   private
     ImgHeight: word; // Высота изображения
     ImgWidth: word; // Ширина изображения
+    Pixels: array of array of TColorPixel; // Пиксели изображения
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
@@ -20,8 +21,6 @@ type
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
     procedure FreePixels; // Освобождение пикселей изображения
   public
-    Pixels: array of array of TColorPixel; // Пиксели изображения
-
     constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
     destructor FreeColorImage; // Стандартный деструктор

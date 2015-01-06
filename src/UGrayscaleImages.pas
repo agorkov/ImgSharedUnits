@@ -9,7 +9,13 @@ type
   /// Монохромное изображение
   TCGrayscaleImage = class
   private
-    Height, Width: word; // Геометрические размеры изображения
+    ImgHeight: word; // Высота изображения
+    ImgWidth: word; // Ширина изображения
+
+    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
+    function GetHeight: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
+    function GetWidth: word; // Получить высоту изображения
 
     procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
@@ -22,10 +28,8 @@ type
     constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
     destructor FreeGrayscaleImage; // Стандартный деструктор
 
-    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
-    function GetHeight: word; // Получить высоту изображения
-    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
-    function GetWidth: word; // Получить высоту изображения
+    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
+    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
 
     procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
     procedure WeightedAVGFilter(h, w: word); // Фильтр на основе взвешенной суммы
@@ -77,8 +81,8 @@ const
 constructor TCGrayscaleImage.Create;
 begin
   inherited;
-  self.Height := 0;
-  self.Width := 0;
+  self.ImgHeight := 0;
+  self.ImgWidth := 0;
 end;
 
 procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
@@ -87,14 +91,14 @@ var
   p: TColorPixel;
   line: pByteArray;
 begin
-  BM.PixelFormat:=pf24bit;
+  BM.PixelFormat := pf24bit;
   p := TColorPixel.Create;
   self.SetHeight(BM.Height);
   self.SetWidth(BM.Width);
-  for i := 0 to self.Height - 1 do
+  for i := 0 to self.ImgHeight - 1 do
   begin
     line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       p.SetRed(line[3 * j + 2] / 255);
       p.SetGreen(line[3 * j + 1] / 255);
@@ -108,8 +112,8 @@ end;
 constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
 begin
   inherited;
-  self.Height := 0;
-  self.Width := 0;
+  self.ImgHeight := 0;
+  self.ImgWidth := 0;
   self.LoadFromBitMap(BM);
 end;
 
@@ -120,8 +124,8 @@ begin
   inherited;
   self.SetHeight(From.GetHeight);
   self.SetWidth(From.GetWidth);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       self.Pixels[i, j] := From.Pixels[i, j];
 end;
 
@@ -135,9 +139,9 @@ procedure TCGrayscaleImage.FreePixels;
 var
   i: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    for i := 0 to self.Height - 1 do
+    for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
         self.Pixels[i],
@@ -157,17 +161,17 @@ procedure TCGrayscaleImage.InitPixels;
 var
   i, j: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
     SetLength(
       self.Pixels,
-      self.Height);
-    for i := 0 to self.Height - 1 do
+      self.ImgHeight);
+    for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
         self.Pixels[i],
-        self.Width);
-      for j := 0 to self.Width - 1 do
+        self.ImgWidth);
+      for j := 0 to self.ImgWidth - 1 do
         self.Pixels[i, j] := 0;
     end;
   end;
@@ -176,37 +180,37 @@ end;
 procedure TCGrayscaleImage.SetHeight(newHeight: word);
 begin
   FreePixels;
-  self.Height := newHeight;
+  self.ImgHeight := newHeight;
   self.InitPixels;
 end;
 
 function TCGrayscaleImage.GetHeight: word;
 begin
-  GetHeight := self.Height;
+  GetHeight := self.ImgHeight;
 end;
 
 procedure TCGrayscaleImage.SetWidth(newWidth: word);
 begin
   FreePixels;
-  self.Width := newWidth;
+  self.ImgWidth := newWidth;
   self.InitPixels;
 end;
 
 function TCGrayscaleImage.GetWidth: word;
 begin
-  GetWidth := self.Width;
+  GetWidth := self.ImgWidth;
 end;
 
 function TCGrayscaleImage.GetPixelValue(i, j: integer): double;
 begin
   if i < 0 then
     i := 0;
-  if i >= self.Height then
-    i := self.Height - 1;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
   if j < 0 then
     j := 0;
-  if j >= self.Width then
-    j := self.Width - 1;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
   GetPixelValue := self.Pixels[i, j];
 end;
 
@@ -214,13 +218,13 @@ procedure TCGrayscaleImage.Copy(From: TCGrayscaleImage);
 var
   i, j: word;
 begin
-  if (self.Height <> From.Height) or (self.Width <> From.Width) then
+  if (self.ImgHeight <> From.ImgHeight) or (self.ImgWidth <> From.ImgWidth) then
   begin
-    self.SetHeight(From.Height);
-    self.SetWidth(From.Width);
+    self.SetHeight(From.ImgHeight);
+    self.SetWidth(From.ImgWidth);
   end;
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       self.Pixels[i, j] := From.Pixels[i, j];
 end;
 
@@ -232,8 +236,8 @@ var
   GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       sum := 0;
       for fi := -h to h do
@@ -275,8 +279,8 @@ begin
       maskWeigth := maskWeigth + Mask[i, j];
     end;
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       sum := 0;
       for fi := -h to h do
@@ -303,8 +307,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       p := 1;
       for fi := -h to h do
@@ -370,8 +374,8 @@ begin
     tmp,
     (2 * h + 1) * (2 * w + 1) + 1);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       k := 0;
       for fi := -h to h do
@@ -411,8 +415,8 @@ begin
     tmp,
     (2 * h + 1) * (2 * w + 1) + 1);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       k := 0;
       for fi := -h to h do
@@ -454,8 +458,8 @@ begin
     tmp,
     (2 * h + 1) * (2 * w + 1) + 1);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       k := 0;
       for fi := -h to h do
@@ -497,8 +501,8 @@ begin
     tmp,
     (2 * h + 1) * (2 * w + 1) + 1);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       k := 0;
       for fi := -h to h do
@@ -546,8 +550,8 @@ begin
     tmp,
     (2 * h + 1) * (2 * w + 1) + 1);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       k := 0;
       for fi := -h to h do
@@ -591,8 +595,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       response := 0;
       for fi := -1 to 1 do
@@ -620,8 +624,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       response := 0;
       for fi := -1 to 1 do
@@ -649,8 +653,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       response := 0;
       for fi := -1 to 1 do
@@ -678,8 +682,8 @@ var
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       response := 0;
       for fi := -1 to 1 do
@@ -703,8 +707,8 @@ var
   i, j: word;
   val: double;
 begin
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       val := k * self.Pixels[i, j] + b;
       if val > 1 then
@@ -720,8 +724,8 @@ var
   i, j: word;
   val: double;
 begin
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       val := c * log2(self.Pixels[i, j] + 1);
       if val > 1 then
@@ -737,8 +741,8 @@ var
   i, j: word;
   val: double;
 begin
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       val := c * power(self.Pixels[i, j], gamma);
       if val > 1 then
@@ -758,16 +762,16 @@ var
 begin
   for i := 0 to k do
     h[i] := 0;
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       h[round(k * self.Pixels[i, j])] := h[round(k * self.Pixels[i, j])] + 1;
   for i := 0 to k do
-    h[i] := h[i] / (self.Height * self.Width);
+    h[i] := h[i] / (self.ImgHeight * self.ImgWidth);
 
   for i := 1 to k do
     h[i] := h[i - 1] + h[i];
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       self.Pixels[i, j] := h[round(k * self.Pixels[i, j])];
 end;
 
@@ -783,8 +787,8 @@ begin
   Max := 0;
   for i := 0 to k do
     h[i] := 0;
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       h[round(k * self.Pixels[i, j])] := h[round(k * self.Pixels[i, j])] + 1;
 
   for i := 0 to k do
@@ -820,12 +824,12 @@ begin
   p := TColorPixel.Create;
   BM := TBitmap.Create;
   BM.PixelFormat := pf24bit;
-  BM.Height := self.Height;
-  BM.Width := self.Width;
-  for i := 0 to self.Height - 1 do
+  BM.Height := self.ImgHeight;
+  BM.Width := self.ImgWidth;
+  for i := 0 to self.ImgHeight - 1 do
   begin
     line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       p.SetRGB(
         self.Pixels[i, j],
@@ -846,10 +850,10 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.Height);
-  BI.SetWidth(self.Width);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  BI.SetHeight(self.ImgHeight);
+  BI.SetWidth(self.ImgWidth);
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       if self.Pixels[i, j] <= Thresold then
         BI.Pixels[i, j] := true
       else
@@ -863,10 +867,10 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.Height);
-  BI.SetWidth(self.Width);
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  BI.SetHeight(self.ImgHeight);
+  BI.SetWidth(self.ImgWidth);
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       if (self.Pixels[i, j] >= Thresold1) and (self.Pixels[i, j] <= Thresold2) then
         BI.Pixels[i, j] := true
       else
@@ -883,10 +887,10 @@ var
   Imin, Imax, IAvg, localContrast: double;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.Height);
-  BI.SetWidth(self.Width);
-  for i := r to self.Height - 1 - r do
-    for j := r to self.Width - 1 - r do
+  BI.SetHeight(self.ImgHeight);
+  BI.SetWidth(self.ImgWidth);
+  for i := r to self.ImgHeight - 1 - r do
+    for j := r to self.ImgWidth - 1 - r do
     begin
       Imin := 1;
       Imax := 0;

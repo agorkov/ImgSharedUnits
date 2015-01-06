@@ -146,8 +146,8 @@ begin
 
   /// Вычисляем порог бинаризации
   avg := 0;
-  for i := 0 to GSI.GetHeight - 1 do
-    for j := 0 to GSI.GetWidth - 1 do
+  for i := 0 to GSI.Height - 1 do
+    for j := 0 to GSI.Width - 1 do
       avg := avg + GSI.Pixels[i, j];
   avg := avg / (ImgHashSize * ImgHashSize);
 

@@ -192,8 +192,8 @@ var
   GS: TCGrayscaleImage;
 begin
   GS := TCGrayscaleImage.Create;
-  GS.SetHeight(self.ImgHeight);
-  GS.SetWidth(self.ImgWidth);
+  GS.Height := self.ImgHeight;
+  GS.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       GS.Pixels[i, j] := self.Pixels[i, j].GetColorChannel(Channel);
@@ -206,10 +206,10 @@ procedure TCColorImage.SetChannel(
 var
   i, j: word;
 begin
-  if (self.ImgHeight <> GS.GetHeight) or (self.ImgWidth <> GS.GetWidth) then
+  if (self.ImgHeight <> GS.Height) or (self.ImgWidth <> GS.Width) then
   begin
-    self.SetHeight(GS.GetHeight);
-    self.SetWidth(GS.GetWidth);
+    self.SetHeight(GS.Height);
+    self.SetWidth(GS.Width);
   end;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -520,8 +520,8 @@ var
   i, j: word;
 begin
   GSI := TCGrayscaleImage.Create;
-  GSI.SetHeight(self.ImgHeight);
-  GSI.SetWidth(self.ImgWidth);
+  GSI.Height := self.ImgHeight;
+  GSI.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       GSI.Pixels[i, j] := self.Pixels[i, j].GetY;

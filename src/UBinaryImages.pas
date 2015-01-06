@@ -9,24 +9,31 @@ type
   /// Бинарное изображение
   TCBinaryImage = class
   private
-    Height, Width: word; // Геометрические размеры изображения
-
-    procedure FreePixels; // Освобождение пикселей изображения
-    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
-    function GetPixelValue(i, j: integer): boolean; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
-  public
-    Pixels: array of array of boolean; // Пиксели изображения
-    constructor Create; // Простой конструктор
-    destructor FreeBinaryImage; // Стандартный деструктор
+    ImgHeight: word; // Высота изображения
+    ImgWidth: word; // Ширина изображения
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
     function GetWidth: word; // Получить высоту изображения
 
+    procedure FreePixels; // Освобождение пикселей изображения
+    procedure InitPixels;
+    // Инициализация пикслей изображения нулевыми значениями
+    function GetPixelValue(i, j: integer): boolean;
+    // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+  public
+    Pixels: array of array of boolean; // Пиксели изображения
+    constructor Create; // Простой конструктор
+    destructor FreeBinaryImage; // Стандартный деструктор
+
+    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
+    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
+
     procedure Invert;
 
-    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+    function SaveToBitMap: TBitmap;
+    // Сохранение изображения в виде битовой карты
   end;
 
 implementation
@@ -37,8 +44,8 @@ uses
 constructor TCBinaryImage.Create;
 begin
   inherited;
-  self.Height := 0;
-  self.Width := 0;
+  self.ImgHeight := 0;
+  self.ImgWidth := 0;
 end;
 
 destructor TCBinaryImage.FreeBinaryImage;
@@ -51,19 +58,15 @@ procedure TCBinaryImage.FreePixels;
 var
   i: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    for i := 0 to self.Height - 1 do
+    for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.Pixels[i],
-        0);
+      SetLength(self.Pixels[i], 0);
       Finalize(self.Pixels[i]);
       self.Pixels[i] := nil;
     end;
-    SetLength(
-      self.Pixels,
-      0);
+    SetLength(self.Pixels, 0);
     Finalize(self.Pixels);
     self.Pixels := nil;
   end;
@@ -73,17 +76,13 @@ procedure TCBinaryImage.InitPixels;
 var
   i, j: word;
 begin
-  if (self.Height > 0) and (self.Width > 0) then
+  if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    SetLength(
-      self.Pixels,
-      self.Height);
-    for i := 0 to self.Height - 1 do
+    SetLength(self.Pixels, self.ImgHeight);
+    for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.Pixels[i],
-        self.Width);
-      for j := 0 to self.Width - 1 do
+      SetLength(self.Pixels[i], self.ImgWidth);
+      for j := 0 to self.ImgWidth - 1 do
         self.Pixels[i, j] := false;
     end;
   end;
@@ -93,37 +92,37 @@ function TCBinaryImage.GetPixelValue(i, j: integer): boolean;
 begin
   if i < 0 then
     i := 0;
-  if i >= self.Height then
-    i := self.Height - 1;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
   if j < 0 then
     j := 0;
-  if j >= self.Width then
-    j := self.Width - 1;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
   GetPixelValue := self.Pixels[i, j];
 end;
 
 procedure TCBinaryImage.SetHeight(newHeight: word);
 begin
   FreePixels;
-  self.Height := newHeight;
+  self.ImgHeight := newHeight;
   self.InitPixels;
 end;
 
 function TCBinaryImage.GetHeight: word;
 begin
-  GetHeight := self.Height;
+  GetHeight := self.ImgHeight;
 end;
 
 procedure TCBinaryImage.SetWidth(newWidth: word);
 begin
   FreePixels;
-  self.Width := newWidth;
+  self.ImgWidth := newWidth;
   self.InitPixels;
 end;
 
 function TCBinaryImage.GetWidth: word;
 begin
-  GetWidth := self.Width;
+  GetWidth := self.ImgWidth;
 end;
 
 function TCBinaryImage.SaveToBitMap: TBitmap;
@@ -136,23 +135,17 @@ begin
   p := TColorPixel.Create;
   BM := TBitmap.Create;
   BM.PixelFormat := pf24bit;
-  BM.Height := self.Height;
-  BM.Width := self.Width;
-  for i := 0 to self.Height - 1 do
+  BM.Height := self.ImgHeight;
+  BM.Width := self.ImgWidth;
+  for i := 0 to self.ImgHeight - 1 do
   begin
     line := BM.ScanLine[i];
-    for j := 0 to self.Width - 1 do
+    for j := 0 to self.ImgWidth - 1 do
     begin
       if self.Pixels[i, j] then
-        p.SetRGB(
-          0,
-          0,
-          0)
+        p.SetRGB(0, 0, 0)
       else
-        p.SetRGB(
-          1,
-          1,
-          1);
+        p.SetRGB(1, 1, 1);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -166,8 +159,8 @@ procedure TCBinaryImage.Invert;
 var
   i, j: word;
 begin
-  for i := 0 to self.Height - 1 do
-    for j := 0 to self.Width - 1 do
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
       self.Pixels[i, j] := not self.Pixels[i, j];
 end;
 

@@ -157,8 +157,8 @@ begin
   /// Вычисляем хеш
   tmp := '';
   hex := '';
-  for i := 0 to BI.GetHeight - 1 do
-    for j := 0 to BI.GetWidth - 1 do
+  for i := 0 to BI.Height - 1 do
+    for j := 0 to BI.Width - 1 do
     begin
       if BI.Pixels[i, j] then
         tmp := tmp + '1'

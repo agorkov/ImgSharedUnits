@@ -870,8 +870,8 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.ImgHeight);
-  BI.SetWidth(self.ImgWidth);
+  BI.Height:=self.ImgHeight;
+  BI.Width:=self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       if self.ImgPixels[i, j] <= Thresold then
@@ -887,8 +887,8 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.ImgHeight);
-  BI.SetWidth(self.ImgWidth);
+  BI.Height:=self.ImgHeight;
+  BI.Width:=self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       if (self.ImgPixels[i, j] >= Thresold1) and (self.ImgPixels[i, j] <= Thresold2) then
@@ -907,8 +907,8 @@ var
   Imin, Imax, IAvg, localContrast: double;
 begin
   BI := TCBinaryImage.Create;
-  BI.SetHeight(self.ImgHeight);
-  BI.SetWidth(self.ImgWidth);
+  BI.Height:=self.ImgHeight;
+  BI.Width:=self.ImgWidth;
   for i := r to self.ImgHeight - 1 - r do
     for j := r to self.ImgWidth - 1 - r do
     begin

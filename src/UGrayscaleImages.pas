@@ -11,25 +11,30 @@ type
   private
     ImgHeight: word; // Высота изображения
     ImgWidth: word; // Ширина изображения
+    ImgPixels: array of array of double; // Пиксели изображения
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
     function GetWidth: word; // Получить высоту изображения
+    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+    procedure SetPixelValue(
+      i, j: integer;
+      value: double);
 
     procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
-    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+
     constructor CreateCopy(From: TCGrayscaleImage); // Конструктор с копированием другого монохромного изображения
     procedure Copy(From: TCGrayscaleImage); // Копирование монохромного изображения
   public
-    Pixels: array of array of double; // Пиксели изображения
     constructor Create; // Простой конструктор
     constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
     destructor FreeGrayscaleImage; // Стандартный деструктор
 
     property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
     property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
+    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue;
 
     procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
     procedure WeightedAVGFilter(h, w: word); // Фильтр на основе взвешенной суммы
@@ -103,7 +108,7 @@ begin
       p.SetRed(line[3 * j + 2] / 255);
       p.SetGreen(line[3 * j + 1] / 255);
       p.SetBlue(line[3 * j + 0] / 255);
-      self.Pixels[i, j] := p.GetColorChannel(ccY);
+      self.ImgPixels[i, j] := p.GetColorChannel(ccY);
     end;
   end;
   p.Free;
@@ -126,7 +131,7 @@ begin
   self.SetWidth(From.GetWidth);
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.Pixels[i, j] := From.Pixels[i, j];
+      self.ImgPixels[i, j] := From.ImgPixels[i, j];
 end;
 
 destructor TCGrayscaleImage.FreeGrayscaleImage;
@@ -144,16 +149,16 @@ begin
     for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
-        self.Pixels[i],
+        self.ImgPixels[i],
         0);
-      Finalize(self.Pixels[i]);
-      self.Pixels[i] := nil;
+      Finalize(self.ImgPixels[i]);
+      self.ImgPixels[i] := nil;
     end;
     SetLength(
-      self.Pixels,
+      self.ImgPixels,
       0);
-    Finalize(self.Pixels);
-    self.Pixels := nil;
+    Finalize(self.ImgPixels);
+    self.ImgPixels := nil;
   end;
 end;
 
@@ -164,15 +169,15 @@ begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
     SetLength(
-      self.Pixels,
+      self.ImgPixels,
       self.ImgHeight);
     for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
-        self.Pixels[i],
+        self.ImgPixels[i],
         self.ImgWidth);
       for j := 0 to self.ImgWidth - 1 do
-        self.Pixels[i, j] := 0;
+        self.ImgPixels[i, j] := 0;
     end;
   end;
 end;
@@ -211,7 +216,22 @@ begin
     j := 0;
   if j >= self.ImgWidth then
     j := self.ImgWidth - 1;
-  GetPixelValue := self.Pixels[i, j];
+  GetPixelValue := self.ImgPixels[i, j];
+end;
+
+procedure TCGrayscaleImage.SetPixelValue(
+  i, j: integer;
+  value: double);
+begin
+  if i < 0 then
+    i := 0;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
+  if j < 0 then
+    j := 0;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
+  ImgPixels[i, j] := value;
 end;
 
 procedure TCGrayscaleImage.Copy(From: TCGrayscaleImage);
@@ -225,7 +245,7 @@ begin
   end;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.Pixels[i, j] := From.Pixels[i, j];
+      self.ImgPixels[i, j] := From.ImgPixels[i, j];
 end;
 
 procedure TCGrayscaleImage.AVGFilter(h, w: word);
@@ -244,7 +264,7 @@ begin
         for fj := -w to w do
           sum := sum + self.GetPixelValue(i + fi, j + fj);
       sum := sum / ((2 * h + 1) * (2 * w + 1));
-      GSIR.Pixels[i, j] := sum;
+      GSIR.ImgPixels[i, j] := sum;
     end;
   self.Copy(GSIR);
   GSIR.Free;
@@ -286,7 +306,7 @@ begin
       for fi := -h to h do
         for fj := -w to w do
           sum := sum + Mask[fi + h + 1, fj + w + 1] * self.GetPixelValue(i + fi, j + fj);
-      GSIR.Pixels[i, j] := sum / maskWeigth;
+      GSIR.ImgPixels[i, j] := sum / maskWeigth;
     end;
 
   self.Copy(GSIR);
@@ -317,7 +337,7 @@ begin
       p := power(
         p,
         1 / ((2 * h + 1) * (2 * w + 1)));
-      GSIR.Pixels[i, j] := p;
+      GSIR.ImgPixels[i, j] := p;
     end;
 
   self.Copy(GSIR);
@@ -386,7 +406,7 @@ begin
             i + fi,
             j + fj);
         end;
-      GSIR.Pixels[i, j] := FindMedian(
+      GSIR.ImgPixels[i, j] := FindMedian(
         (2 * h + 1) * (2 * w + 1),
         tmp);
     end;
@@ -431,7 +451,7 @@ begin
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
         if tmp[k] > Max then
           Max := tmp[k];
-      GSIR.Pixels[i, j] := Max;
+      GSIR.ImgPixels[i, j] := Max;
     end;
   tmp := nil;
 
@@ -474,7 +494,7 @@ begin
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
         if tmp[k] < Min then
           Min := tmp[k];
-      GSIR.Pixels[i, j] := Min;
+      GSIR.ImgPixels[i, j] := Min;
     end;
   tmp := nil;
 
@@ -522,7 +542,7 @@ begin
         if tmp[k] > Max then
           Max := tmp[k];
       end;
-      GSIR.Pixels[i, j] := (Max + Min) / 2;
+      GSIR.ImgPixels[i, j] := (Max + Min) / 2;
     end;
   tmp := nil;
 
@@ -573,7 +593,7 @@ begin
       sum := 0;
       for k := d + 1 to (2 * h + 1) * (2 * w + 1) - d do
         sum := sum + tmp[k];
-      GSIR.Pixels[i, j] := sum / ((2 * h + 1) * (2 * w + 1) - 2 * d);
+      GSIR.ImgPixels[i, j] := sum / ((2 * h + 1) * (2 * w + 1) - 2 * d);
     end;
   tmp := nil;
 
@@ -603,12 +623,12 @@ begin
         for fj := -1 to 1 do
           response := response + PrevittMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + PrevittMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
-        response := self.Pixels[i, j] + response;
-      GSIR.Pixels[i, j] := response;
+        response := self.ImgPixels[i, j] + response;
+      GSIR.ImgPixels[i, j] := response;
       if response > 1 then
-        GSIR.Pixels[i, j] := 1;
+        GSIR.ImgPixels[i, j] := 1;
       if response < 0 then
-        GSIR.Pixels[i, j] := 0;
+        GSIR.ImgPixels[i, j] := 0;
     end;
 
   self.Copy(GSIR);
@@ -632,12 +652,12 @@ begin
         for fj := -1 to 1 do
           response := response + SobelMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SobelMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
-        response := self.Pixels[i, j] + response;
-      GSIR.Pixels[i, j] := response;
+        response := self.ImgPixels[i, j] + response;
+      GSIR.ImgPixels[i, j] := response;
       if response > 1 then
-        GSIR.Pixels[i, j] := 1;
+        GSIR.ImgPixels[i, j] := 1;
       if response < 0 then
-        GSIR.Pixels[i, j] := 0;
+        GSIR.ImgPixels[i, j] := 0;
     end;
 
   self.Copy(GSIR);
@@ -661,12 +681,12 @@ begin
         for fj := -1 to 1 do
           response := response + SharrMaskX[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj) + SharrMaskY[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
-        response := self.Pixels[i, j] + response;
-      GSIR.Pixels[i, j] := response;
+        response := self.ImgPixels[i, j] + response;
+      GSIR.ImgPixels[i, j] := response;
       if response > 1 then
-        GSIR.Pixels[i, j] := 1;
+        GSIR.ImgPixels[i, j] := 1;
       if response < 0 then
-        GSIR.Pixels[i, j] := 0;
+        GSIR.ImgPixels[i, j] := 0;
     end;
 
   self.Copy(GSIR);
@@ -690,12 +710,12 @@ begin
         for fj := -1 to 1 do
           response := response + LaplaceMask[fi + 1 + 1, fj + 1 + 1] * self.GetPixelValue(i + fi, j + fj);
       if AddToOriginal then
-        response := self.Pixels[i, j] - response;
-      GSIR.Pixels[i, j] := response;
+        response := self.ImgPixels[i, j] - response;
+      GSIR.ImgPixels[i, j] := response;
       if response > 1 then
-        GSIR.Pixels[i, j] := 1;
+        GSIR.ImgPixels[i, j] := 1;
       if response < 0 then
-        GSIR.Pixels[i, j] := 0;
+        GSIR.ImgPixels[i, j] := 0;
     end;
 
   self.Copy(GSIR);
@@ -710,12 +730,12 @@ begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
     begin
-      val := k * self.Pixels[i, j] + b;
+      val := k * self.ImgPixels[i, j] + b;
       if val > 1 then
         val := 1;
       if val < 0 then
         val := 0;
-      self.Pixels[i, j] := val;
+      self.ImgPixels[i, j] := val;
     end;
 end;
 
@@ -727,12 +747,12 @@ begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
     begin
-      val := c * log2(self.Pixels[i, j] + 1);
+      val := c * log2(self.ImgPixels[i, j] + 1);
       if val > 1 then
         val := 1;
       if val < 0 then
         val := 0;
-      self.Pixels[i, j] := val;
+      self.ImgPixels[i, j] := val;
     end;
 end;
 
@@ -744,12 +764,12 @@ begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
     begin
-      val := c * power(self.Pixels[i, j], gamma);
+      val := c * power(self.ImgPixels[i, j], gamma);
       if val > 1 then
         val := 1;
       if val < 0 then
         val := 0;
-      self.Pixels[i, j] := val;
+      self.ImgPixels[i, j] := val;
     end;
 end;
 
@@ -764,7 +784,7 @@ begin
     h[i] := 0;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      h[round(k * self.Pixels[i, j])] := h[round(k * self.Pixels[i, j])] + 1;
+      h[round(k * self.ImgPixels[i, j])] := h[round(k * self.ImgPixels[i, j])] + 1;
   for i := 0 to k do
     h[i] := h[i] / (self.ImgHeight * self.ImgWidth);
 
@@ -772,7 +792,7 @@ begin
     h[i] := h[i - 1] + h[i];
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.Pixels[i, j] := h[round(k * self.Pixels[i, j])];
+      self.ImgPixels[i, j] := h[round(k * self.ImgPixels[i, j])];
 end;
 
 function TCGrayscaleImage.Histogram: TBitmap;
@@ -789,7 +809,7 @@ begin
     h[i] := 0;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      h[round(k * self.Pixels[i, j])] := h[round(k * self.Pixels[i, j])] + 1;
+      h[round(k * self.ImgPixels[i, j])] := h[round(k * self.ImgPixels[i, j])] + 1;
 
   for i := 0 to k do
     if h[i] > Max then
@@ -832,9 +852,9 @@ begin
     for j := 0 to self.ImgWidth - 1 do
     begin
       p.SetRGB(
-        self.Pixels[i, j],
-        self.Pixels[i, j],
-        self.Pixels[i, j]);
+        self.ImgPixels[i, j],
+        self.ImgPixels[i, j],
+        self.ImgPixels[i, j]);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -854,7 +874,7 @@ begin
   BI.SetWidth(self.ImgWidth);
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      if self.Pixels[i, j] <= Thresold then
+      if self.ImgPixels[i, j] <= Thresold then
         BI.Pixels[i, j] := true
       else
         BI.Pixels[i, j] := false;
@@ -871,7 +891,7 @@ begin
   BI.SetWidth(self.ImgWidth);
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      if (self.Pixels[i, j] >= Thresold1) and (self.Pixels[i, j] <= Thresold2) then
+      if (self.ImgPixels[i, j] >= Thresold1) and (self.ImgPixels[i, j] <= Thresold2) then
         BI.Pixels[i, j] := true
       else
         BI.Pixels[i, j] := false;
@@ -897,17 +917,17 @@ begin
       for internali := i - r to i + r do
         for internalj := j - r to j + r do
         begin
-          if self.Pixels[internali, internalj] > Imax then
-            Imax := self.Pixels[internali, internalj];
-          if self.Pixels[internali, internalj] < Imin then
-            Imin := self.Pixels[internali, internalj];
+          if self.ImgPixels[internali, internalj] > Imax then
+            Imax := self.ImgPixels[internali, internalj];
+          if self.ImgPixels[internali, internalj] < Imin then
+            Imin := self.ImgPixels[internali, internalj];
         end;
       localContrast := Imax - Imin;
       IAvg := (Imax - Imin) / 2;
       if localContrast < ContrastThresold then
         BI.Pixels[i, j] := IAvg >= 0.5
       else
-        BI.Pixels[i, j] := self.Pixels[i, j] >= IAvg;
+        BI.Pixels[i, j] := self.ImgPixels[i, j] >= IAvg;
     end;
   BernsenBinarization := BI;
 end;

@@ -11,7 +11,7 @@ type
   private
     ImgHeight: word; // Высота изображения
     ImgWidth: word; // Ширина изображения
-    Pixels: array of array of TColorPixel; // Пиксели изображения
+    ImgPixels: array of array of TColorPixel; // Пиксели изображения
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
@@ -124,18 +124,18 @@ begin
     for i := 0 to self.ImgHeight - 1 do
     begin
       for j := 0 to self.ImgWidth - 1 do
-        self.Pixels[i, j].Free;
+        self.ImgPixels[i, j].Free;
       SetLength(
-        self.Pixels[i],
+        self.ImgPixels[i],
         0);
-      Finalize(self.Pixels[i]);
-      self.Pixels[i] := nil;
+      Finalize(self.ImgPixels[i]);
+      self.ImgPixels[i] := nil;
     end;
     SetLength(
-      self.Pixels,
+      self.ImgPixels,
       0);
-    Finalize(self.Pixels);
-    self.Pixels := nil;
+    Finalize(self.ImgPixels);
+    self.ImgPixels := nil;
   end;
 end;
 
@@ -146,17 +146,17 @@ begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
     SetLength(
-      self.Pixels,
+      self.ImgPixels,
       self.ImgHeight);
     for i := 0 to self.ImgHeight - 1 do
     begin
       SetLength(
-        self.Pixels[i],
+        self.ImgPixels[i],
         self.ImgWidth);
       for j := 0 to self.ImgWidth - 1 do
       begin
-        self.Pixels[i, j] := TColorPixel.Create;
-        self.Pixels[i, j].SetFullColor(0);
+        self.ImgPixels[i, j] := TColorPixel.Create;
+        self.ImgPixels[i, j].SetFullColor(0);
       end;
     end;
   end;
@@ -196,7 +196,7 @@ begin
   GS.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      GS.Pixels[i, j] := self.Pixels[i, j].GetColorChannel(Channel);
+      GS.Pixels[i, j] := self.ImgPixels[i, j].GetColorChannel(Channel);
   GetChanel := GS;
 end;
 
@@ -213,7 +213,7 @@ begin
   end;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.Pixels[i, j].SetColorChannel(
+      self.ImgPixels[i, j].SetColorChannel(
         Channel,
         GS.Pixels[i, j]);
 end;
@@ -484,9 +484,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      self.Pixels[i, j].SetRed(line[j * 3 + 2] / 255);
-      self.Pixels[i, j].SetGreen(line[j * 3 + 1] / 255);
-      self.Pixels[i, j].SetBlue(line[j * 3 + 0] / 255);
+      self.ImgPixels[i, j].SetRed(line[j * 3 + 2] / 255);
+      self.ImgPixels[i, j].SetGreen(line[j * 3 + 1] / 255);
+      self.ImgPixels[i, j].SetBlue(line[j * 3 + 0] / 255);
     end;
   end;
 end;
@@ -506,9 +506,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      line[j * 3 + 2] := round(self.Pixels[i, j].GetRed * 255);
-      line[j * 3 + 1] := round(self.Pixels[i, j].GetGreen * 255);
-      line[j * 3 + 0] := round(self.Pixels[i, j].GetBlue * 255);
+      line[j * 3 + 2] := round(self.ImgPixels[i, j].GetRed * 255);
+      line[j * 3 + 1] := round(self.ImgPixels[i, j].GetGreen * 255);
+      line[j * 3 + 0] := round(self.ImgPixels[i, j].GetBlue * 255);
     end;
   end;
   SaveToBitMap := BM;
@@ -524,7 +524,7 @@ begin
   GSI.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      GSI.Pixels[i, j] := self.Pixels[i, j].GetY;
+      GSI.Pixels[i, j] := self.ImgPixels[i, j].GetY;
   ConvertToGrayscale := GSI;
 end;
 

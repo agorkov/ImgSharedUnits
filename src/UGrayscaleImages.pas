@@ -20,7 +20,7 @@ type
     function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
     procedure SetPixelValue(
       i, j: integer;
-      value: double);
+      value: double); // Устанавливает значение заданного пиксела. Если запрашиваемые координаты за пределами изображения, устанавливается значение ближайшего пиксела
 
     procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
@@ -34,7 +34,7 @@ type
 
     property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
     property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
-    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue;
+    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue; // Свойство для чтения и записи отдельных пикселей
 
     procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
     procedure WeightedAVGFilter(h, w: word); // Фильтр на основе взвешенной суммы

@@ -17,6 +17,10 @@ type
     function GetHeight: word; // ѕолучить высоту изображени€
     procedure SetWidth(newWidth: word); // «адать новую ширину изображени€
     function GetWidth: word; // ѕолучить высоту изображени€
+    function GetPixelValue(i, j: integer): TColorPixel; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
+    procedure SetPixelValue(
+      i, j: integer;
+      value: TColorPixel); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
 
     procedure InitPixels; // »нициализаци€ пикслей изображени€ нулевыми значени€ми
     procedure FreePixels; // ќсвобождение пикселей изображени€
@@ -27,6 +31,7 @@ type
 
     property Height: word read GetHeight write SetHeight; // —войство дл€ чтени€ и записи высоты изображени€
     property Width: word read GetWidth write SetWidth; // —войство дл€ чтени€ и записи ширины изображени€
+    property Pixels[row, col: integer]: TColorPixel read GetPixelValue write SetPixelValue; // —войство дл€ чтени€ и записи отдельных пикселей
 
     function GetChanel(Channel: TEColorChannel): TCGrayscaleImage; // —читать заданный цветовой канал как монохромное изображение
     procedure SetChannel(
@@ -184,6 +189,34 @@ end;
 function TCColorImage.GetWidth: word;
 begin
   GetWidth := self.ImgWidth;
+end;
+
+function TCColorImage.GetPixelValue(i, j: integer): TColorPixel;
+begin
+  if i < 0 then
+    i := 0;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
+  if j < 0 then
+    j := 0;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
+  GetPixelValue := self.ImgPixels[i, j];
+end;
+
+procedure TCColorImage.SetPixelValue(
+  i, j: integer;
+  value: TColorPixel);
+begin
+  if i < 0 then
+    i := 0;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
+  if j < 0 then
+    j := 0;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
+  ImgPixels[i, j] := value;
 end;
 
 function TCColorImage.GetChanel(Channel: TEColorChannel): TCGrayscaleImage;

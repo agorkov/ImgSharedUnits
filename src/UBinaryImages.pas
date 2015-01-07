@@ -11,29 +11,32 @@ type
   private
     ImgHeight: word; // ¬ысота изображени€
     ImgWidth: word; // Ўирина изображени€
+    ImgPixels: array of array of boolean; // ѕиксели изображени€
 
     procedure SetHeight(newHeight: word); // «адать новую высоту изображени€
     function GetHeight: word; // ѕолучить высоту изображени€
+
     procedure SetWidth(newWidth: word); // «адать новую ширину изображени€
     function GetWidth: word; // ѕолучить высоту изображени€
 
+    procedure SetPixelValue(
+      i, j: integer;
+      value: boolean); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
+    function GetPixelValue(i, j: integer): boolean; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
+
+    procedure InitPixels; // »нициализаци€ пикслей изображени€ нулевыми значени€ми
     procedure FreePixels; // ќсвобождение пикселей изображени€
-    procedure InitPixels;
-    // »нициализаци€ пикслей изображени€ нулевыми значени€ми
-    function GetPixelValue(i, j: integer): boolean;
-    // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
   public
-    Pixels: array of array of boolean; // ѕиксели изображени€
     constructor Create; // ѕростой конструктор
     destructor FreeBinaryImage; // —тандартный деструктор
 
+    function SaveToBitMap: TBitmap; // —охранение изображени€ в виде битовой карты
+
     property Height: word read GetHeight write SetHeight; // —войство дл€ чтени€ и записи высоты изображени€
     property Width: word read GetWidth write SetWidth; // —войство дл€ чтени€ и записи ширины изображени€
+    property Pixels[row, col: integer]: boolean read GetPixelValue write SetPixelValue; // —войство дл€ чтени€ и записи отдельных пикселей
 
-    procedure Invert;
-
-    function SaveToBitMap: TBitmap;
-    // —охранение изображени€ в виде битовой карты
+    procedure Invert; // »нвертирует каждый пиксел монохромного изображени€ (без создани€ нового изображени€)
   end;
 
 implementation
@@ -62,13 +65,17 @@ begin
   begin
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(self.Pixels[i], 0);
-      Finalize(self.Pixels[i]);
-      self.Pixels[i] := nil;
+      SetLength(
+        self.ImgPixels[i],
+        0);
+      Finalize(self.ImgPixels[i]);
+      self.ImgPixels[i] := nil;
     end;
-    SetLength(self.Pixels, 0);
-    Finalize(self.Pixels);
-    self.Pixels := nil;
+    SetLength(
+      self.ImgPixels,
+      0);
+    Finalize(self.ImgPixels);
+    self.ImgPixels := nil;
   end;
 end;
 
@@ -78,12 +85,16 @@ var
 begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    SetLength(self.Pixels, self.ImgHeight);
+    SetLength(
+      self.ImgPixels,
+      self.ImgHeight);
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(self.Pixels[i], self.ImgWidth);
+      SetLength(
+        self.ImgPixels[i],
+        self.ImgWidth);
       for j := 0 to self.ImgWidth - 1 do
-        self.Pixels[i, j] := false;
+        self.ImgPixels[i, j] := false;
     end;
   end;
 end;
@@ -98,7 +109,22 @@ begin
     j := 0;
   if j >= self.ImgWidth then
     j := self.ImgWidth - 1;
-  GetPixelValue := self.Pixels[i, j];
+  GetPixelValue := self.ImgPixels[i, j];
+end;
+
+procedure TCBinaryImage.SetPixelValue(
+  i, j: integer;
+  value: boolean);
+begin
+  if i < 0 then
+    i := 0;
+  if i >= self.ImgHeight then
+    i := self.ImgHeight - 1;
+  if j < 0 then
+    j := 0;
+  if j >= self.ImgWidth then
+    j := self.ImgWidth - 1;
+  self.ImgPixels[i, j] := value;
 end;
 
 procedure TCBinaryImage.SetHeight(newHeight: word);
@@ -142,10 +168,16 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      if self.Pixels[i, j] then
-        p.SetRGB(0, 0, 0)
+      if self.ImgPixels[i, j] then
+        p.SetRGB(
+          0,
+          0,
+          0)
       else
-        p.SetRGB(1, 1, 1);
+        p.SetRGB(
+          1,
+          1,
+          1);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -161,7 +193,7 @@ var
 begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.Pixels[i, j] := not self.Pixels[i, j];
+      self.ImgPixels[i, j] := not self.ImgPixels[i, j];
 end;
 
 end.

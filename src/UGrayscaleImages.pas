@@ -15,17 +15,20 @@ type
 
     procedure SetHeight(newHeight: word); // Задать новую высоту изображения
     function GetHeight: word; // Получить высоту изображения
+
     procedure SetWidth(newWidth: word); // Задать новую ширину изображения
     function GetWidth: word; // Получить высоту изображения
-    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+
     procedure SetPixelValue(
       i, j: integer;
       value: double); // Устанавливает значение заданного пиксела. Если запрашиваемые координаты за пределами изображения, устанавливается значение ближайшего пиксела
+    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
 
-    procedure FreePixels; // Освобождение пикселей изображения
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
+    procedure FreePixels; // Освобождение пикселей изображения
 
     constructor CreateCopy(From: TCGrayscaleImage); // Конструктор с копированием другого монохромного изображения
+
     procedure Copy(From: TCGrayscaleImage); // Копирование монохромного изображения
   public
     constructor Create; // Простой конструктор
@@ -56,7 +59,7 @@ type
     procedure LogTransform(c: double); // Логарифмическое преобразование
     procedure GammaTransform(c, gamma: double); // Гамма-коррекция
 
-    procedure LoadFromBitMap(BM: TBitmap);
+    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
 
     function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
@@ -870,8 +873,8 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.Height:=self.ImgHeight;
-  BI.Width:=self.ImgWidth;
+  BI.Height := self.ImgHeight;
+  BI.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       if self.ImgPixels[i, j] <= Thresold then
@@ -887,8 +890,8 @@ var
   i, j: word;
 begin
   BI := TCBinaryImage.Create;
-  BI.Height:=self.ImgHeight;
-  BI.Width:=self.ImgWidth;
+  BI.Height := self.ImgHeight;
+  BI.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       if (self.ImgPixels[i, j] >= Thresold1) and (self.ImgPixels[i, j] <= Thresold2) then
@@ -907,8 +910,8 @@ var
   Imin, Imax, IAvg, localContrast: double;
 begin
   BI := TCBinaryImage.Create;
-  BI.Height:=self.ImgHeight;
-  BI.Width:=self.ImgWidth;
+  BI.Height := self.ImgHeight;
+  BI.Width := self.ImgWidth;
   for i := r to self.ImgHeight - 1 - r do
     for j := r to self.ImgWidth - 1 - r do
     begin

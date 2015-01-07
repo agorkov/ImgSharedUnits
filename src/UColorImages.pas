@@ -15,12 +15,14 @@ type
 
     procedure SetHeight(newHeight: word); // «адать новую высоту изображени€
     function GetHeight: word; // ѕолучить высоту изображени€
+
     procedure SetWidth(newWidth: word); // «адать новую ширину изображени€
     function GetWidth: word; // ѕолучить высоту изображени€
-    function GetPixelValue(i, j: integer): TColorPixel; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
+
     procedure SetPixelValue(
       i, j: integer;
       value: TColorPixel); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
+    function GetPixelValue(i, j: integer): TColorPixel; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
 
     procedure InitPixels; // »нициализаци€ пикслей изображени€ нулевыми значени€ми
     procedure FreePixels; // ќсвобождение пикселей изображени€
@@ -91,7 +93,7 @@ type
     procedure LoadFromBitMap(BM: TBitmap); // «агрузка изображени€ из битовой карты
     function SaveToBitMap: TBitmap; // —охранение изображени€ в виде битовой карты
 
-    function ConvertToGrayscale: TCGrayscaleImage;
+    function ConvertToGrayscale: TCGrayscaleImage; // ѕреобразование в монохромное изображение
   end;
 
 implementation

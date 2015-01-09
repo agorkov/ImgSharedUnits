@@ -86,6 +86,7 @@ type
     procedure GammaTransform(
       Channel: TEColorChannel;
       c, gamma: double); // Гамма-коррекция
+    procedure EditContrast(Channel: TEColorChannel; k: double);
 
     procedure HistogramEqualization(Channel: TEColorChannel); // Эквализация гистограммы
     function Histogram(Channel: TEColorChannel): TBitmap; // Получение гистограммы
@@ -444,6 +445,18 @@ var
 begin
   GS := self.GetChanel(Channel);
   GS.HistogramEqualization;
+  self.SetChannel(
+    Channel,
+    GS);
+  GS.FreeGrayscaleImage;
+end;
+
+procedure TCColorImage.EditContrast(Channel: TEColorChannel; k: double);
+var
+  GS: TCGrayscaleImage;
+begin
+  GS := self.GetChanel(Channel);
+  GS.EditContrast(k);
   self.SetChannel(
     Channel,
     GS);

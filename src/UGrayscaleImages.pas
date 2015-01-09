@@ -52,6 +52,8 @@ type
     procedure SharrFilter(AddToOriginal: boolean); // Фильтр Щарра
     procedure LaplaceFilter(AddToOriginal: boolean); // Фильтр Лапласа
 
+    procedure EditContrast(k: double); // Усиление или уменьшение контраста
+
     procedure HistogramEqualization; // Эквализация гистограммы
     function Histogram: TBitmap; // Получение гистограммы
 
@@ -933,6 +935,38 @@ begin
         BI.Pixels[i, j] := self.ImgPixels[i, j] >= IAvg;
     end;
   BernsenBinarization := BI;
+end;
+
+procedure TCGrayscaleImage.EditContrast(k: double);
+var
+  avg: double;
+  delta, temp: double;
+  i, j: word;
+  b: array [0 .. 255] of double;
+begin
+  avg := 0;
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
+      avg := avg + self.ImgPixels[i, j];
+  avg := round(avg / (self.ImgHeight * self.ImgWidth) * 255);
+
+  for i := 0 to 255 do
+  Begin
+    delta := i - avg;
+    temp := avg + k * delta;
+
+    if temp < 0 then
+      temp := 0;
+
+    if (temp >= 255) then
+      temp := 255;
+
+    b[i] := temp / 255;
+  end;
+
+  for i := 0 to self.ImgHeight - 1 do
+    for j := 0 to self.ImgWidth - 1 do
+      self.ImgPixels[i, j] := b[round(self.ImgPixels[i, j] * 255)];
 end;
 
 end.

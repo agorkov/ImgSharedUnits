@@ -47,6 +47,12 @@ type
     procedure erosion(
       Mask: TCBinaryImage;
       MaskRow, MaskCol: word);
+    procedure closing(
+      Mask: TCBinaryImage;
+      MaskRow, MaskCol: word);
+    procedure opening(
+      Mask: TCBinaryImage;
+      MaskRow, MaskCol: word);
   end;
 
 implementation
@@ -216,7 +222,6 @@ begin
   r := TCBinaryImage.Create;
   r.Height := self.ImgHeight;
   r.Width := self.ImgWidth;
-
   for i := 0 to r.Height - 1 do
     for j := 0 to r.Width - 1 do
       if self.Pixels[i, j] then
@@ -234,9 +239,7 @@ begin
           Mi := Mi + 1;
         end;
       end;
-
   self.Copy(r);
-
   r.FreeBinaryImage;
 end;
 
@@ -251,7 +254,6 @@ begin
   r := TCBinaryImage.Create;
   r.Height := self.ImgHeight;
   r.Width := self.ImgWidth;
-
   for i := 0 to r.Height - 1 do
     for j := 0 to r.Width - 1 do
     begin
@@ -275,10 +277,36 @@ begin
       end;
       r.Pixels[i, j] := fl;
     end;
-
   self.Copy(r);
-
   r.FreeBinaryImage;
+end;
+
+procedure TCBinaryImage.closing(
+  Mask: TCBinaryImage;
+  MaskRow, MaskCol: word);
+begin
+  self.dilatation(
+    Mask,
+    MaskRow,
+    MaskCol);
+  self.erosion(
+    Mask,
+    MaskRow,
+    MaskCol);
+end;
+
+procedure TCBinaryImage.opening(
+  Mask: TCBinaryImage;
+  MaskRow, MaskCol: word);
+begin
+  self.erosion(
+    Mask,
+    MaskRow,
+    MaskCol);
+  self.dilatation(
+    Mask,
+    MaskRow,
+    MaskCol);
 end;
 
 procedure TCBinaryImage.Copy(From: TCBinaryImage);

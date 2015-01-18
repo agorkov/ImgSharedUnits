@@ -26,8 +26,11 @@ type
 
     procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
     procedure FreePixels; // Освобождение пикселей изображения
+
+    procedure Copy(From: TCBinaryImage);
   public
     constructor Create; // Простой конструктор
+    constructor CreateCopy(From: TCBinaryImage);
     destructor FreeBinaryImage; // Стандартный деструктор
 
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
@@ -37,6 +40,10 @@ type
     property Pixels[row, col: integer]: boolean read GetPixelValue write SetPixelValue; // Свойство для чтения и записи отдельных пикселей
 
     procedure Invert; // Инвертирует каждый пиксел монохромного изображения (без создания нового изображения)
+
+    procedure dilatation(
+      Mask: TCBinaryImage;
+      MaskRow, MaskCol: word);
   end;
 
 implementation
@@ -194,6 +201,57 @@ begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
       self.ImgPixels[i, j] := not self.ImgPixels[i, j];
+end;
+
+procedure TCBinaryImage.dilatation(
+  Mask: TCBinaryImage;
+  MaskRow, MaskCol: word);
+var
+  i, j, AreaI, AreaJ, Mi, Mj: integer;
+  r: TCBinaryImage;
+begin
+  r := TCBinaryImage.Create;
+  r.Height := self.ImgHeight;
+  r.Width := self.ImgWidth;
+
+  for i := 0 to r.Height - 1 do
+    for j := 0 to r.Width - 1 do
+      if self.Pixels[i, j] then
+      begin
+        Mi := 0;
+        for AreaI := i - MaskRow to i + (Mask.Height - 1 - MaskRow) do
+        begin
+          Mj := 0;
+          for AreaJ := j - MaskCol to j + (Mask.Width - 1 - MaskCol) do
+          begin
+            if (AreaI >= 0) and (AreaI <= r.Height - 1) and (AreaJ >= 0) and (AreaJ <= r.Width - 1) then
+              r.Pixels[AreaI, AreaJ] := self.Pixels[AreaI, AreaJ] or Mask.Pixels[Mi, Mj] or r.Pixels[AreaI, AreaJ];
+            Mj := Mj + 1;
+          end;
+          Mi := Mi + 1;
+        end;
+      end;
+
+  self.Copy(r);
+
+  r.FreeBinaryImage;
+end;
+
+procedure TCBinaryImage.Copy(From: TCBinaryImage);
+var
+  i, j: word;
+begin
+  self.Height := From.Height;
+  self.Width := From.Width;
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      self.Pixels[i, j] := From.Pixels[i, j];
+end;
+
+constructor TCBinaryImage.CreateCopy(From: TCBinaryImage);
+begin
+  inherited;
+  self.Copy(From);
 end;
 
 end.

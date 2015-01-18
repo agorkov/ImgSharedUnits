@@ -44,6 +44,9 @@ type
     procedure dilatation(
       Mask: TCBinaryImage;
       MaskRow, MaskCol: word);
+    procedure erosion(
+      Mask: TCBinaryImage;
+      MaskRow, MaskCol: word);
   end;
 
 implementation
@@ -231,6 +234,47 @@ begin
           Mi := Mi + 1;
         end;
       end;
+
+  self.Copy(r);
+
+  r.FreeBinaryImage;
+end;
+
+procedure TCBinaryImage.erosion(
+  Mask: TCBinaryImage;
+  MaskRow, MaskCol: word);
+var
+  i, j, AreaI, AreaJ, Mi, Mj: integer;
+  fl: boolean;
+  r: TCBinaryImage;
+begin
+  r := TCBinaryImage.Create;
+  r.Height := self.ImgHeight;
+  r.Width := self.ImgWidth;
+
+  for i := 0 to r.Height - 1 do
+    for j := 0 to r.Width - 1 do
+    begin
+      fl := true;
+      Mi := 0;
+      for AreaI := i - MaskRow to i + (Mask.Height - 1 - MaskRow) do
+      begin
+        Mj := 0;
+        for AreaJ := j - MaskCol to j + (Mask.Width - 1 - MaskCol) do
+        begin
+          if (AreaI >= 0) and (AreaI <= r.Height - 1) and (AreaJ >= 0) and (AreaJ <= r.Width - 1) then
+          begin
+            if Mask.Pixels[Mi, Mj] then
+              fl := fl and self.Pixels[AreaI, AreaJ];
+          end
+          else
+            fl := false;
+          Mj := Mj + 1;
+        end;
+        Mi := Mi + 1;
+      end;
+      r.Pixels[i, j] := fl;
+    end;
 
   self.Copy(r);
 

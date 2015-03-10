@@ -61,6 +61,7 @@ type
 
     procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
 
     function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
     function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage; // Пороговая бинаризация по диапазону
@@ -70,7 +71,7 @@ type
 implementation
 
 uses
-  Math, SysUtils, UPixelConvert, UColorImages;
+  Math, SysUtils, UPixelConvert, UColorImages, UBitmapFunctions;
 
 const
   LaplaceMask: array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
@@ -804,6 +805,15 @@ begin
   end;
   SaveToBitMap := BM;
   p.Free;
+end;
+
+procedure TCGrayscaleImage.SaveToFile(FileName: string);
+var
+  BM: TBitmap;
+begin
+  BM := self.SaveToBitMap;
+  UBitmapFunctions.SaveToFile(BM, FileName);
+  BM.Free;
 end;
 
 function TCGrayscaleImage.ThresoldBinarization(Thresold: double): TCBinaryImage;

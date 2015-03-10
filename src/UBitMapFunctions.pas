@@ -9,9 +9,7 @@ const
   SUPPORTED_FORMATS = '*.bmp;*.jpg;*.jpeg;*.png';
 
 function LoadFromFile(const FileName: TFileName): TBitmap;
-procedure SaveToFile(
-  const BM: TBitmap;
-  const FileName: string);
+procedure SaveToFile(const BM: TBitmap; const FileName: string);
 function GetHashHex(BMOrigin: TBitmap): string;
 function GetHashInt64(BMOrigin: TBitmap): int64;
 function CompareHashes(Hash1, Hash2: int64): double;
@@ -75,9 +73,7 @@ begin
     LoadFromFile := nil;
 end;
 
-procedure SaveToFile(
-  const BM: TBitmap;
-  const FileName: string);
+procedure SaveToFile(const BM: TBitmap; const FileName: string);
 var
   Ext: string;
   jpg: TJPEGImage;
@@ -139,9 +135,7 @@ begin
   BMMin := TBitmap.Create;
   BMMin.Height := ImgHashSize;
   BMMin.Width := ImgHashSize;
-  BMMin.Canvas.StretchDraw(
-    Rect(0, 0, ImgHashSize - 1, ImgHashSize - 1),
-    BMOrigin);
+  BMMin.Canvas.StretchDraw(Rect(0, 0, ImgHashSize - 1, ImgHashSize - 1), BMOrigin);
   GSI := TCGrayscaleImage.CreateAndLoadFromBitmap(BMMin);
 
   /// Вычисляем порог бинаризации
@@ -236,9 +230,7 @@ var
 begin
   h1 := UBitMapFunctions.GetHashInt64(BM1);
   h2 := UBitMapFunctions.GetHashInt64(BM2);
-  CompareImages := CompareHashes(
-    h1,
-    h2);
+  CompareImages := CompareHashes(h1, h2);
 end;
 
 end.

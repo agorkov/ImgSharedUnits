@@ -19,9 +19,7 @@ type
     procedure SetWidth(newWidth: word); // «адать новую ширину изображени€
     function GetWidth: word; // ѕолучить высоту изображени€
 
-    procedure SetPixelValue(
-      i, j: integer;
-      value: boolean); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
+    procedure SetPixelValue(i, j: integer; value: boolean); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
     function GetPixelValue(i, j: integer): boolean; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
 
     procedure InitPixels; // »нициализаци€ пикслей изображени€ нулевыми значени€ми
@@ -41,18 +39,10 @@ type
 
     procedure Invert; // »нвертирует каждый пиксел монохромного изображени€ (без создани€ нового изображени€)
 
-    procedure dilatation(
-      Mask: TCBinaryImage;
-      MaskRow, MaskCol: word);
-    procedure erosion(
-      Mask: TCBinaryImage;
-      MaskRow, MaskCol: word);
-    procedure closing(
-      Mask: TCBinaryImage;
-      MaskRow, MaskCol: word);
-    procedure opening(
-      Mask: TCBinaryImage;
-      MaskRow, MaskCol: word);
+    procedure dilatation(Mask: TCBinaryImage; MaskRow, MaskCol: word);
+    procedure erosion(Mask: TCBinaryImage; MaskRow, MaskCol: word);
+    procedure closing(Mask: TCBinaryImage; MaskRow, MaskCol: word);
+    procedure opening(Mask: TCBinaryImage; MaskRow, MaskCol: word);
   end;
 
 implementation
@@ -81,15 +71,11 @@ begin
   begin
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.ImgPixels[i],
-        0);
+      SetLength(self.ImgPixels[i], 0);
       Finalize(self.ImgPixels[i]);
       self.ImgPixels[i] := nil;
     end;
-    SetLength(
-      self.ImgPixels,
-      0);
+    SetLength(self.ImgPixels, 0);
     Finalize(self.ImgPixels);
     self.ImgPixels := nil;
   end;
@@ -101,14 +87,10 @@ var
 begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    SetLength(
-      self.ImgPixels,
-      self.ImgHeight);
+    SetLength(self.ImgPixels, self.ImgHeight);
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.ImgPixels[i],
-        self.ImgWidth);
+      SetLength(self.ImgPixels[i], self.ImgWidth);
       for j := 0 to self.ImgWidth - 1 do
         self.ImgPixels[i, j] := false;
     end;
@@ -128,9 +110,7 @@ begin
   GetPixelValue := self.ImgPixels[i, j];
 end;
 
-procedure TCBinaryImage.SetPixelValue(
-  i, j: integer;
-  value: boolean);
+procedure TCBinaryImage.SetPixelValue(i, j: integer; value: boolean);
 begin
   if i < 0 then
     i := 0;
@@ -185,15 +165,9 @@ begin
     for j := 0 to self.ImgWidth - 1 do
     begin
       if self.ImgPixels[i, j] then
-        p.SetRGB(
-          0,
-          0,
-          0)
+        p.SetRGB(0, 0, 0)
       else
-        p.SetRGB(
-          1,
-          1,
-          1);
+        p.SetRGB(1, 1, 1);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -212,9 +186,7 @@ begin
       self.ImgPixels[i, j] := not self.ImgPixels[i, j];
 end;
 
-procedure TCBinaryImage.dilatation(
-  Mask: TCBinaryImage;
-  MaskRow, MaskCol: word);
+procedure TCBinaryImage.dilatation(Mask: TCBinaryImage; MaskRow, MaskCol: word);
 var
   i, j, AreaI, AreaJ, Mi, Mj: integer;
   r: TCBinaryImage;
@@ -243,9 +215,7 @@ begin
   r.FreeBinaryImage;
 end;
 
-procedure TCBinaryImage.erosion(
-  Mask: TCBinaryImage;
-  MaskRow, MaskCol: word);
+procedure TCBinaryImage.erosion(Mask: TCBinaryImage; MaskRow, MaskCol: word);
 var
   i, j, AreaI, AreaJ, Mi, Mj: integer;
   fl: boolean;
@@ -281,32 +251,16 @@ begin
   r.FreeBinaryImage;
 end;
 
-procedure TCBinaryImage.closing(
-  Mask: TCBinaryImage;
-  MaskRow, MaskCol: word);
+procedure TCBinaryImage.closing(Mask: TCBinaryImage; MaskRow, MaskCol: word);
 begin
-  self.dilatation(
-    Mask,
-    MaskRow,
-    MaskCol);
-  self.erosion(
-    Mask,
-    MaskRow,
-    MaskCol);
+  self.dilatation(Mask, MaskRow, MaskCol);
+  self.erosion(Mask, MaskRow, MaskCol);
 end;
 
-procedure TCBinaryImage.opening(
-  Mask: TCBinaryImage;
-  MaskRow, MaskCol: word);
+procedure TCBinaryImage.opening(Mask: TCBinaryImage; MaskRow, MaskCol: word);
 begin
-  self.erosion(
-    Mask,
-    MaskRow,
-    MaskCol);
-  self.dilatation(
-    Mask,
-    MaskRow,
-    MaskCol);
+  self.erosion(Mask, MaskRow, MaskCol);
+  self.dilatation(Mask, MaskRow, MaskCol);
 end;
 
 procedure TCBinaryImage.Copy(From: TCBinaryImage);

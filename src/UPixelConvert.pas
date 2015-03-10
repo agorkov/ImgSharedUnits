@@ -19,8 +19,7 @@ type
   /// ccCyan - голубой, ccMagenta - пурпурный, ccYellow - жёлтый, ccKeyColor - ключевой цвет (чёрный)
   /// ccHue - тон, ccSaturation - насыщенность, ccIntensity - интенсивность
   /// ccY - компонента интенсивности, ccI - цветоразностная компонента, ccQ - цветоразностная компонента
-  TEColorChannel = (ccRed, ccGreen, ccBlue, ccCyan, ccMagenta, ccYellow,
-    ccKeyColor, ccHue, ccSaturation, ccIntensity, ccY, ccI, ccQ);
+  TEColorChannel = (ccRed, ccGreen, ccBlue, ccCyan, ccMagenta, ccYellow, ccKeyColor, ccHue, ccSaturation, ccIntensity, ccY, ccI, ccQ);
 
   /// Описание цвета. В зависимости от выбранной вариантной части, цвет представляется в одном из поддерживаемых цветовых пространств
   TRColorChannels = record
@@ -203,10 +202,7 @@ end;
 
 procedure TColorPixel.RGBToFullColor;
 begin
-  self.ColorChannels.FullColor :=
-    Winapi.Windows.RGB(round(self.ColorChannels.ccRed * 255),
-    round(self.ColorChannels.ccGreen * 255),
-    round(self.ColorChannels.ccBlue * 255));
+  self.ColorChannels.FullColor := Winapi.Windows.RGB(round(self.ColorChannels.ccRed * 255), round(self.ColorChannels.ccGreen * 255), round(self.ColorChannels.ccBlue * 255));
   self.ColorSpace := csFullColor;
 end;
 
@@ -235,12 +231,9 @@ begin
   self.ColorChannels.ccKeyColor := 1 - max(max(R, G), B);
   if self.ColorChannels.ccKeyColor <> 1 then
   begin
-    self.ColorChannels.ccCyan := (1 - R - self.ColorChannels.ccKeyColor) /
-      (1 - self.ColorChannels.ccKeyColor);
-    self.ColorChannels.ccMagenta := (1 - G - self.ColorChannels.ccKeyColor) /
-      (1 - self.ColorChannels.ccKeyColor);
-    self.ColorChannels.ccYellow := (1 - B - self.ColorChannels.ccKeyColor) /
-      (1 - self.ColorChannels.ccKeyColor);
+    self.ColorChannels.ccCyan := (1 - R - self.ColorChannels.ccKeyColor) / (1 - self.ColorChannels.ccKeyColor);
+    self.ColorChannels.ccMagenta := (1 - G - self.ColorChannels.ccKeyColor) / (1 - self.ColorChannels.ccKeyColor);
+    self.ColorChannels.ccYellow := (1 - B - self.ColorChannels.ccKeyColor) / (1 - self.ColorChannels.ccKeyColor);
   end
   else
   begin
@@ -274,8 +267,7 @@ begin
   B := self.ColorChannels.ccBlue;
   self.ColorChannels.ccIntensity := (R + G + B) / 3;
   if self.ColorChannels.ccIntensity > 0 then
-    self.ColorChannels.ccSaturation := 1 - min(min(R, G), B) /
-      self.ColorChannels.ccIntensity
+    self.ColorChannels.ccSaturation := 1 - min(min(R, G), B) / self.ColorChannels.ccIntensity
   else
     self.ColorChannels.ccSaturation := 0;
   if self.ColorChannels.ccSaturation <> 0 then
@@ -284,11 +276,9 @@ begin
     G := round(G * 255);
     B := round(B * 255);
     if G >= B then
-      rHue := RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) +
-        sqr(B) - R * G - R * B - G * B)))
+      rHue := RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) + sqr(B) - R * G - R * B - G * B)))
     else
-      rHue := 360 - RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) +
-        sqr(B) - R * G - R * B - G * B)))
+      rHue := 360 - RadToDeg(arccos((R - G / 2 - B / 2) / sqrt(sqr(R) + sqr(G) + sqr(B) - R * G - R * B - G * B)))
   end
   else
     rHue := 361;
@@ -310,48 +300,48 @@ begin
     self.ColorChannels.ccGreen := I - I * S;
     self.ColorChannels.ccBlue := I - I * S;
   end
-  else if (0 < H) and (H < 120) then
-  begin
-    self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) /
-      cos(DegToRad(60 - H));
-    self.ColorChannels.ccGreen := I + I * S *
-      (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
-    self.ColorChannels.ccBlue := I - I * S;
-  end
-  else if (H = 120) then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I + 2 * I * S;
-    self.ColorChannels.ccBlue := I - I * S;
-  end
-  else if (120 < H) and (H < 240) then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) /
-      cos(DegToRad(180 - H));
-    self.ColorChannels.ccBlue := I + I * S *
-      (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
-  end
-  else if H = 240 then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I - I * S;
-    self.ColorChannels.ccBlue := I + 2 * I * S;
-  end
-  else if (240 < H) and (H < 360) then
-  begin
-    self.ColorChannels.ccRed := I + I * S *
-      (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
-    self.ColorChannels.ccGreen := I - I * S;
-    self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) /
-      cos(DegToRad(300 - H));
-  end
-  else if H > 360 then
-  begin
-    self.ColorChannels.ccRed := I;
-    self.ColorChannels.ccGreen := I;
-    self.ColorChannels.ccBlue := I;
-  end;
+  else
+    if (0 < H) and (H < 120) then
+    begin
+      self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
+      self.ColorChannels.ccGreen := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
+      self.ColorChannels.ccBlue := I - I * S;
+    end
+    else
+      if (H = 120) then
+      begin
+        self.ColorChannels.ccRed := I - I * S;
+        self.ColorChannels.ccGreen := I + 2 * I * S;
+        self.ColorChannels.ccBlue := I - I * S;
+      end
+      else
+        if (120 < H) and (H < 240) then
+        begin
+          self.ColorChannels.ccRed := I - I * S;
+          self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
+          self.ColorChannels.ccBlue := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
+        end
+        else
+          if H = 240 then
+          begin
+            self.ColorChannels.ccRed := I - I * S;
+            self.ColorChannels.ccGreen := I - I * S;
+            self.ColorChannels.ccBlue := I + 2 * I * S;
+          end
+          else
+            if (240 < H) and (H < 360) then
+            begin
+              self.ColorChannels.ccRed := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
+              self.ColorChannels.ccGreen := I - I * S;
+              self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
+            end
+            else
+              if H > 360 then
+              begin
+                self.ColorChannels.ccRed := I;
+                self.ColorChannels.ccGreen := I;
+                self.ColorChannels.ccBlue := I;
+              end;
   self.ColorSpace := csRGB;
 end;
 

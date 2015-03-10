@@ -19,9 +19,7 @@ type
     procedure SetWidth(newWidth: word); // «адать новую ширину изображени€
     function GetWidth: word; // ѕолучить высоту изображени€
 
-    procedure SetPixelValue(
-      i, j: integer;
-      value: double); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
+    procedure SetPixelValue(i, j: integer; value: double); // ”станавливает значение заданного пиксела. ≈сли запрашиваемые координаты за пределами изображени€, устанавливаетс€ значение ближайшего пиксела
     function GetPixelValue(i, j: integer): double; // ¬озвращает заданный пиксел изображени€. ≈сли запрашиваемые координаты за пределами изображени€, возвращаетс€ значение ближайшего пиксела
 
     procedure InitPixels; // »нициализаци€ пикслей изображени€ нулевыми значени€ми
@@ -66,9 +64,7 @@ type
 
     function ThresoldBinarization(Thresold: double): TCBinaryImage; // ѕорогова€ бинаризаци€
     function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage; // ѕорогова€ бинаризаци€ по диапазону
-    function BernsenBinarization(
-      r: word;
-      ContrastThresold: double): TCBinaryImage; // Ѕинаризаци€ Ѕернсена
+    function BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage; // Ѕинаризаци€ Ѕернсена
   end;
 
 implementation
@@ -153,15 +149,11 @@ begin
   begin
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.ImgPixels[i],
-        0);
+      SetLength(self.ImgPixels[i], 0);
       Finalize(self.ImgPixels[i]);
       self.ImgPixels[i] := nil;
     end;
-    SetLength(
-      self.ImgPixels,
-      0);
+    SetLength(self.ImgPixels, 0);
     Finalize(self.ImgPixels);
     self.ImgPixels := nil;
   end;
@@ -173,14 +165,10 @@ var
 begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
-    SetLength(
-      self.ImgPixels,
-      self.ImgHeight);
+    SetLength(self.ImgPixels, self.ImgHeight);
     for i := 0 to self.ImgHeight - 1 do
     begin
-      SetLength(
-        self.ImgPixels[i],
-        self.ImgWidth);
+      SetLength(self.ImgPixels[i], self.ImgWidth);
       for j := 0 to self.ImgWidth - 1 do
         self.ImgPixels[i, j] := 0;
     end;
@@ -224,9 +212,7 @@ begin
   GetPixelValue := self.ImgPixels[i, j];
 end;
 
-procedure TCGrayscaleImage.SetPixelValue(
-  i, j: integer;
-  value: double);
+procedure TCGrayscaleImage.SetPixelValue(i, j: integer; value: double);
 begin
   if i < 0 then
     i := 0;
@@ -285,13 +271,9 @@ var
   maxDist, maskWeigth: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    Mask,
-    2 * h + 2);
+  SetLength(Mask, 2 * h + 2);
   for i := 1 to 2 * h + 1 do
-    SetLength(
-      Mask[i],
-      2 * w + 2);
+    SetLength(Mask[i], 2 * w + 2);
   for i := -h to h do
     for j := -w to w do
       Mask[i + h + 1, j + w + 1] := sqrt(sqr(i) + sqr(j));
@@ -316,9 +298,7 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(
-    Mask,
-    0);
+  SetLength(Mask, 0);
   Finalize(Mask);
   Mask := nil;
 end;
@@ -339,9 +319,7 @@ begin
       for fi := -h to h do
         for fj := -w to w do
           p := p * self.GetPixelValue(i + fi, j + fj);
-      p := power(
-        p,
-        1 / ((2 * h + 1) * (2 * w + 1)));
+      p := power(p, 1 / ((2 * h + 1) * (2 * w + 1)));
       GSIR.ImgPixels[i, j] := p;
     end;
 
@@ -350,9 +328,7 @@ begin
 end;
 
 procedure TCGrayscaleImage.MedianFilter(h, w: word);
-  function FindMedian(
-    N: word;
-    var Arr: array of double): double;
+  function FindMedian(N: word; var Arr: array of double): double;
   var
     L, r, k, i, j: word;
     w, x: double;
@@ -395,9 +371,7 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    tmp,
-    (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -407,21 +381,15 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(
-            i + fi,
-            j + fj);
+          tmp[k] := self.GetPixelValue(i + fi, j + fj);
         end;
-      GSIR.ImgPixels[i, j] := FindMedian(
-        (2 * h + 1) * (2 * w + 1),
-        tmp);
+      GSIR.ImgPixels[i, j] := FindMedian((2 * h + 1) * (2 * w + 1), tmp);
     end;
   tmp := nil;
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(
-    tmp,
-    0);
+  SetLength(tmp, 0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -436,9 +404,7 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    tmp,
-    (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -448,9 +414,7 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(
-            i + fi,
-            j + fj);
+          tmp[k] := self.GetPixelValue(i + fi, j + fj);
         end;
       Max := tmp[1];
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
@@ -462,9 +426,7 @@ begin
 
   self.Copy(GSIR);
   GSIR.Free;
-  SetLength(
-    tmp,
-    0);
+  SetLength(tmp, 0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -479,9 +441,7 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    tmp,
-    (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -491,9 +451,7 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(
-            i + fi,
-            j + fj);
+          tmp[k] := self.GetPixelValue(i + fi, j + fj);
         end;
       Min := tmp[1];
       for k := 1 to (2 * h + 1) * (2 * w + 1) do
@@ -505,9 +463,7 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(
-    tmp,
-    0);
+  SetLength(tmp, 0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -522,9 +478,7 @@ var
   tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    tmp,
-    (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -534,9 +488,7 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(
-            i + fi,
-            j + fj);
+          tmp[k] := self.GetPixelValue(i + fi, j + fj);
         end;
       Min := tmp[1];
       Max := tmp[1];
@@ -553,9 +505,7 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(
-    tmp,
-    0);
+  SetLength(tmp, 0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -571,9 +521,7 @@ var
   sum: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
-  SetLength(
-    tmp,
-    (2 * h + 1) * (2 * w + 1) + 1);
+  SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
 
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -583,9 +531,7 @@ begin
         for fj := -w to w do
         begin
           k := k + 1;
-          tmp[k] := self.GetPixelValue(
-            i + fi,
-            j + fj);
+          tmp[k] := self.GetPixelValue(i + fi, j + fj);
         end;
       for k := 1 to (2 * h + 1) * (2 * w + 1) - 1 do
         for L := k + 1 to (2 * h + 1) * (2 * w + 1) do
@@ -604,9 +550,7 @@ begin
 
   self.Copy(GSIR);
   GSIR.FreeGrayscaleImage;
-  SetLength(
-    tmp,
-    0);
+  SetLength(tmp, 0);
   Finalize(tmp);
   tmp := nil;
 end;
@@ -829,12 +773,8 @@ begin
 
   for i := 0 to k do
   begin
-    BM.Canvas.MoveTo(
-      i,
-      BM.Height);
-    BM.Canvas.LineTo(
-      i,
-      BM.Height - round(h[i] * 100 / Max));
+    BM.Canvas.MoveTo(i, BM.Height);
+    BM.Canvas.LineTo(i, BM.Height - round(h[i] * 100 / Max));
   end;
   Histogram := BM;
 end;
@@ -856,10 +796,7 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      p.SetRGB(
-        self.ImgPixels[i, j],
-        self.ImgPixels[i, j],
-        self.ImgPixels[i, j]);
+      p.SetRGB(self.ImgPixels[i, j], self.ImgPixels[i, j], self.ImgPixels[i, j]);
       line[3 * j + 2] := round(p.GetRed * 255);
       line[3 * j + 1] := round(p.GetGreen * 255);
       line[3 * j + 0] := round(p.GetBlue * 255);
@@ -903,9 +840,7 @@ begin
   ThresoldInervalBinarization := BI;
 end;
 
-function TCGrayscaleImage.BernsenBinarization(
-  r: word;
-  ContrastThresold: double): TCBinaryImage;
+function TCGrayscaleImage.BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage;
 var
   BI: TCBinaryImage;
   i, j, internali, internalj: word;

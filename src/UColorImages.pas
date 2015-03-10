@@ -59,6 +59,8 @@ type
 
     procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
     function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+    procedure LoadFromFile(FileName: string); // Загрузка изображения из файла
+    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
 
     function ConvertToGrayscale: TCGrayscaleImage; // Преобразование в монохромное изображение
   end;
@@ -66,7 +68,7 @@ type
 implementation
 
 uses
-  SysUtils, UBinaryImages, Classes;
+  SysUtils, UBinaryImages, Classes, UBitmapFunctions;
 
 constructor TCColorImage.Create;
 begin
@@ -427,6 +429,24 @@ begin
     end;
   end;
   SaveToBitMap := BM;
+end;
+
+procedure TCColorImage.LoadFromFile(FileName: string);
+var
+  BM: TBitmap;
+begin
+  BM := UBitmapFunctions.LoadFromFile(FileName);
+  self.LoadFromBitMap(BM);
+  BM.Free;
+end;
+
+procedure TCColorImage.SaveToFile(FileName: string);
+var
+  BM: TBitmap;
+begin
+  BM := self.SaveToBitMap;
+  UBitmapFunctions.SaveToFile(BM, FileName);
+  BM.Free;
 end;
 
 function TCColorImage.ConvertToGrayscale: TCGrayscaleImage;

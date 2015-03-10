@@ -39,6 +39,8 @@ type
 
     procedure Invert; // Инвертирует каждый пиксел монохромного изображения (без создания нового изображения)
 
+    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
+
     procedure dilatation(Mask: TCBinaryImage; MaskRow, MaskCol: word);
     procedure erosion(Mask: TCBinaryImage; MaskRow, MaskCol: word);
     procedure closing(Mask: TCBinaryImage; MaskRow, MaskCol: word);
@@ -48,7 +50,7 @@ type
 implementation
 
 uses
-  UPixelConvert, SysUtils;
+  UPixelConvert, SysUtils, UBitmapFunctions;
 
 constructor TCBinaryImage.Create;
 begin
@@ -278,6 +280,15 @@ constructor TCBinaryImage.CreateCopy(From: TCBinaryImage);
 begin
   inherited;
   self.Copy(From);
+end;
+
+procedure TCBinaryImage.SaveToFile(FileName: string);
+var
+  BM: TBitmap;
+begin
+  BM := self.SaveToBitMap;
+  UBitmapFunctions.SaveToFile(BM, FileName);
+  BM.Free;
 end;
 
 end.

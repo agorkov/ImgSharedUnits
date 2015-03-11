@@ -107,9 +107,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      p.SetRed(line[3 * j + 2] / 255);
-      p.SetGreen(line[3 * j + 1] / 255);
-      p.SetBlue(line[3 * j + 0] / 255);
+      p.Red:=line[3 * j + 2] / 255;
+      p.Green:=line[3 * j + 1] / 255;
+      p.Blue:=line[3 * j + 0] / 255;
       self.ImgPixels[i, j] := p.GetColorChannel(ccY);
     end;
   end;

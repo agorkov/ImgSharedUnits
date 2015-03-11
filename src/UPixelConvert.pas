@@ -67,16 +67,20 @@ type
     procedure SetFullColor(Color: TColor); // Задать TColor
     function GetFullColor: TColor; // Считать TColor
 
-  public
-
-    property FullColor: TColor read GetFullColor write SetFullColor;
-
     procedure SetRed(red: double); // Задать красную составляющую
     function GetRed: double; // Получить красную составляющую
     procedure SetGreen(green: double); // Задать зелёную составляющую
     function GetGreen: double; // Получить зелёную составляющую
     procedure SetBlue(blue: double); // Задать синюю составляющую
     function GetBlue: double; // Получить синюю составляющую
+
+  public
+
+    property FullColor: TColor read GetFullColor write SetFullColor;
+
+    property red: double read GetRed write SetRed;
+    property green: double read GetGreen write SetGreen;
+    property blue: double read GetBlue write SetBlue;
     procedure SetRGB(R, G, B: double); // Задать все параметры RGB
 
     procedure SetCyan(cyan: double); // Задать голубую составляющую

@@ -401,9 +401,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      self.ImgPixels[i, j].SetRed(line[j * 3 + 2] / 255);
-      self.ImgPixels[i, j].SetGreen(line[j * 3 + 1] / 255);
-      self.ImgPixels[i, j].SetBlue(line[j * 3 + 0] / 255);
+      self.ImgPixels[i, j].Red := line[j * 3 + 2] / 255;
+      self.ImgPixels[i, j].Green := line[j * 3 + 1] / 255;
+      self.ImgPixels[i, j].Blue := line[j * 3 + 0] / 255;
     end;
   end;
 end;
@@ -423,9 +423,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      line[j * 3 + 2] := round(self.ImgPixels[i, j].GetRed * 255);
-      line[j * 3 + 1] := round(self.ImgPixels[i, j].GetGreen * 255);
-      line[j * 3 + 0] := round(self.ImgPixels[i, j].GetBlue * 255);
+      line[j * 3 + 2] := round(self.ImgPixels[i, j].Red * 255);
+      line[j * 3 + 1] := round(self.ImgPixels[i, j].Green * 255);
+      line[j * 3 + 0] := round(self.ImgPixels[i, j].Blue * 255);
     end;
   end;
   SaveToBitMap := BM;

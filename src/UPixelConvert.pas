@@ -63,9 +63,13 @@ type
 
     procedure NormalizeChannels;
     function NormalizeValue(x: double): double;
-  public
+
     procedure SetFullColor(Color: TColor); // Задать TColor
     function GetFullColor: TColor; // Считать TColor
+
+  public
+
+    property FullColor: TColor read GetFullColor write SetFullColor;
 
     procedure SetRed(red: double); // Задать красную составляющую
     function GetRed: double; // Получить красную составляющую
@@ -300,48 +304,42 @@ begin
     self.ColorChannels.ccGreen := I - I * S;
     self.ColorChannels.ccBlue := I - I * S;
   end
-  else
-    if (0 < H) and (H < 120) then
-    begin
-      self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
-      self.ColorChannels.ccGreen := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
-      self.ColorChannels.ccBlue := I - I * S;
-    end
-    else
-      if (H = 120) then
-      begin
-        self.ColorChannels.ccRed := I - I * S;
-        self.ColorChannels.ccGreen := I + 2 * I * S;
-        self.ColorChannels.ccBlue := I - I * S;
-      end
-      else
-        if (120 < H) and (H < 240) then
-        begin
-          self.ColorChannels.ccRed := I - I * S;
-          self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
-          self.ColorChannels.ccBlue := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
-        end
-        else
-          if H = 240 then
-          begin
-            self.ColorChannels.ccRed := I - I * S;
-            self.ColorChannels.ccGreen := I - I * S;
-            self.ColorChannels.ccBlue := I + 2 * I * S;
-          end
-          else
-            if (240 < H) and (H < 360) then
-            begin
-              self.ColorChannels.ccRed := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
-              self.ColorChannels.ccGreen := I - I * S;
-              self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
-            end
-            else
-              if H > 360 then
-              begin
-                self.ColorChannels.ccRed := I;
-                self.ColorChannels.ccGreen := I;
-                self.ColorChannels.ccBlue := I;
-              end;
+  else if (0 < H) and (H < 120) then
+  begin
+    self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
+    self.ColorChannels.ccGreen := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
+    self.ColorChannels.ccBlue := I - I * S;
+  end
+  else if (H = 120) then
+  begin
+    self.ColorChannels.ccRed := I - I * S;
+    self.ColorChannels.ccGreen := I + 2 * I * S;
+    self.ColorChannels.ccBlue := I - I * S;
+  end
+  else if (120 < H) and (H < 240) then
+  begin
+    self.ColorChannels.ccRed := I - I * S;
+    self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
+    self.ColorChannels.ccBlue := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
+  end
+  else if H = 240 then
+  begin
+    self.ColorChannels.ccRed := I - I * S;
+    self.ColorChannels.ccGreen := I - I * S;
+    self.ColorChannels.ccBlue := I + 2 * I * S;
+  end
+  else if (240 < H) and (H < 360) then
+  begin
+    self.ColorChannels.ccRed := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
+    self.ColorChannels.ccGreen := I - I * S;
+    self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
+  end
+  else if H > 360 then
+  begin
+    self.ColorChannels.ccRed := I;
+    self.ColorChannels.ccGreen := I;
+    self.ColorChannels.ccBlue := I;
+  end;
   self.ColorSpace := csRGB;
 end;
 

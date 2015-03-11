@@ -124,7 +124,7 @@ begin
       for j := 0 to self.ImgWidth - 1 do
       begin
         self.ImgPixels[i, j] := TColorPixel.Create;
-        self.ImgPixels[i, j].SetFullColor(0);
+        self.ImgPixels[i, j].FullColor := 0;
       end;
     end;
   end;

@@ -82,6 +82,20 @@ type
     function GetYellow: double; // Получить жёлтую составляющую
     procedure SetKeyColor(keyColor: double); // Задать ключевую (чёрную) составляющую
     function GetKeyColor: double; // Получить ключевую (чёрную) составляющую
+
+    procedure SetHue(hue: double); // Задать составляющую цветового тона
+    function GetHue: double; // Получить составляющую цветового тона
+    procedure SetSaturation(saturation: double); // Задать составляющую насыщенности
+    function GetSaturation: double; // Получить составляющую насыщенности
+    procedure SetIntensity(intensity: double); // Задать составляющую интенсивности
+    function GetIntensity: double; // Задать составляющую интенсивности
+
+    procedure SetY(Y: double); // Задать Y составляющую
+    function GetY: double; // Получить Y составляющую
+    procedure SetI(I: double); // Задать I составляющую
+    function GetI: double; // Получить I составляющую
+    procedure SetQ(Q: double); // Задать Q составляющую
+    function GetQ: double; // Получить Q составляющую
   public
 
     property FullColor: TColor read GetFullColor write SetFullColor;
@@ -97,28 +111,18 @@ type
     property keyColor: double read GetKeyColor write SetKeyColor;
     procedure SetCMYK(C, M, Y, K: double); // Задать все параметры CMYK
 
-    procedure SetHue(hue: double); // Задать составляющую цветового тона
-    function GetHue: double; // Получить составляющую цветового тона
-    procedure SetSaturation(saturation: double);
-    // Задать составляющую насыщенности
-    function GetSaturation: double; // Получить составляющую насыщенности
-    procedure SetIntensity(intensity: double);
-    // Задать составляющую интенсивности
-    function GetIntensity: double; // Задать составляющую интенсивности
+    property hue: double read GetHue write SetHue;
+    property saturation: double read GetSaturation write SetSaturation;
+    property intensity: double read GetIntensity write SetIntensity;
     procedure SetHSI(H, S, I: double); // Задать все параметры HSI
 
-    procedure SetY(Y: double); // Задать Y составляющую
-    function GetY: double; // Получить Y составляющую
-    procedure SetI(I: double); // Задать I составляющую
-    function GetI: double; // Получить I составляющую
-    procedure SetQ(Q: double); // Задать Q составляющую
-    function GetQ: double; // Получить Q составляющую
+    property Y: double read GetY write SetY;
+    property I: double read GetI write SetI;
+    property Q: double read GetQ write SetQ;
     procedure SetYIQ(Y, I, Q: double); // Задать все параметры YIQ
 
-    procedure SetColorChannel(Channel: TEColorChannel; value: double);
-    // Задать значение указанного цветового канала
-    function GetColorChannel(Channel: TEColorChannel): double;
-    // Получить значение указанного цветового канала
+    procedure SetColorChannel(Channel: TEColorChannel; value: double); // Задать значение указанного цветового канала
+    function GetColorChannel(Channel: TEColorChannel): double; // Получить значение указанного цветового канала
   end;
 
 implementation

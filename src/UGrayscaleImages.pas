@@ -798,9 +798,9 @@ begin
     for j := 0 to self.ImgWidth - 1 do
     begin
       p.SetRGB(self.ImgPixels[i, j], self.ImgPixels[i, j], self.ImgPixels[i, j]);
-      line[3 * j + 2] := round(p.GetRed * 255);
-      line[3 * j + 1] := round(p.GetGreen * 255);
-      line[3 * j + 0] := round(p.GetBlue * 255);
+      line[3 * j + 2] := round(p.Red * 255);
+      line[3 * j + 1] := round(p.Green * 255);
+      line[3 * j + 0] := round(p.Blue * 255);
     end;
   end;
   SaveToBitMap := BM;

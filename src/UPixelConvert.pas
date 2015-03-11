@@ -74,6 +74,14 @@ type
     procedure SetBlue(blue: double); // Задать синюю составляющую
     function GetBlue: double; // Получить синюю составляющую
 
+    procedure SetCyan(cyan: double); // Задать голубую составляющую
+    function GetCyan: double; // Получить голубую составляющую
+    procedure SetMagenta(magenta: double); // Задать пурпурную составляющую
+    function GetMagenta: double; // Получить пурпурную составляющую
+    procedure SetYellow(yellow: double); // Задать жёлтую составляющую
+    function GetYellow: double; // Получить жёлтую составляющую
+    procedure SetKeyColor(keyColor: double); // Задать ключевую (чёрную) составляющую
+    function GetKeyColor: double; // Получить ключевую (чёрную) составляющую
   public
 
     property FullColor: TColor read GetFullColor write SetFullColor;
@@ -83,15 +91,10 @@ type
     property blue: double read GetBlue write SetBlue;
     procedure SetRGB(R, G, B: double); // Задать все параметры RGB
 
-    procedure SetCyan(cyan: double); // Задать голубую составляющую
-    function GetCyan: double; // Получить голубую составляющую
-    procedure SetMagenta(magenta: double); // Задать пурпурную составляющую
-    function GetMagenta: double; // Получить пурпурную составляющую
-    procedure SetYellow(yellow: double); // Задать жёлтую составляющую
-    function GetYellow: double; // Получить жёлтую составляющую
-    procedure SetKeyColor(keyColor: double);
-    // Задать ключевую (чёрную) составляющую
-    function GetKeyColor: double; // Получить ключевую (чёрную) составляющую
+    property cyan: double read GetCyan write SetCyan;
+    property magenta: double read GetMagenta write SetMagenta;
+    property yellow: double read GetYellow write SetYellow;
+    property keyColor: double read GetKeyColor write SetKeyColor;
     procedure SetCMYK(C, M, Y, K: double); // Задать все параметры CMYK
 
     procedure SetHue(hue: double); // Задать составляющую цветового тона

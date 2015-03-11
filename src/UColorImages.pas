@@ -459,7 +459,7 @@ begin
   GSI.Width := self.ImgWidth;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      GSI.Pixels[i, j] := self.ImgPixels[i, j].GetY;
+      GSI.Pixels[i, j] := self.ImgPixels[i, j].Y;
   ConvertToGrayscale := GSI;
 end;
 

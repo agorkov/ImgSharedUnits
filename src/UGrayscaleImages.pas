@@ -6,66 +6,66 @@ uses
   VCL.Graphics, UBinaryImages;
 
 type
-  /// Монохромное изображение
+
   TCGrayscaleImage = class
   private
-    ImgHeight: word; // Высота изображения
-    ImgWidth: word; // Ширина изображения
-    ImgPixels: array of array of double; // Пиксели изображения
+    ImgHeight: word;
+    ImgWidth: word;
+    ImgPixels: array of array of double;
 
-    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
-    function GetHeight: word; // Получить высоту изображения
+    procedure SetHeight(newHeight: word);
+    function GetHeight: word;
 
-    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
-    function GetWidth: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word);
+    function GetWidth: word;
 
-    procedure SetPixelValue(i, j: integer; value: double); // Устанавливает значение заданного пиксела. Если запрашиваемые координаты за пределами изображения, устанавливается значение ближайшего пиксела
-    function GetPixelValue(i, j: integer): double; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+    procedure SetPixelValue(i, j: integer; value: double);
+    function GetPixelValue(i, j: integer): double;
 
-    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
-    procedure FreePixels; // Освобождение пикселей изображения
+    procedure InitPixels;
+    procedure FreePixels;
 
-    constructor CreateCopy(From: TCGrayscaleImage); // Конструктор с копированием другого монохромного изображения
+    constructor CreateCopy(From: TCGrayscaleImage);
 
-    procedure Copy(From: TCGrayscaleImage); // Копирование монохромного изображения
+    procedure Copy(From: TCGrayscaleImage);
   public
-    constructor Create; // Простой конструктор
-    constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
-    destructor FreeGrayscaleImage; // Стандартный деструктор
+    constructor Create;
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
+    destructor FreeGrayscaleImage;
 
-    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
-    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
-    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue; // Свойство для чтения и записи отдельных пикселей
+    property Height: word read GetHeight write SetHeight;
+    property Width: word read GetWidth write SetWidth;
+    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue;
 
-    procedure AVGFilter(h, w: word); // Фильтр на основе среднегоарифметического
-    procedure WeightedAVGFilter(h, w: word); // Фильтр на основе взвешенной суммы
-    procedure GeometricMeanFilter(h, w: word); // Фильтр на основе среднего геометрического
-    procedure MedianFilter(h, w: word); // Медианный фильтр
-    procedure MaxFilter(h, w: word); // Фильтр максимума
-    procedure MinFilter(h, w: word); // Фильтр минимума
-    procedure MiddlePointFilter(h, w: word); // Фильтр на основе срединной точки
-    procedure TruncatedAVGFilter(h, w, d: word); // Фильтр усечённого среднего
-    procedure PrevittFilter(AddToOriginal: boolean); // Фильтр Превитт
-    procedure SobelFilter(AddToOriginal: boolean); // Фильтр Собеля
-    procedure SharrFilter(AddToOriginal: boolean); // Фильтр Щарра
-    procedure LaplaceFilter(AddToOriginal: boolean); // Фильтр Лапласа
+    procedure AVGFilter(h, w: word);
+    procedure WeightedAVGFilter(h, w: word);
+    procedure GeometricMeanFilter(h, w: word);
+    procedure MedianFilter(h, w: word);
+    procedure MaxFilter(h, w: word);
+    procedure MinFilter(h, w: word);
+    procedure MiddlePointFilter(h, w: word);
+    procedure TruncatedAVGFilter(h, w, d: word);
+    procedure PrevittFilter(AddToOriginal: boolean);
+    procedure SobelFilter(AddToOriginal: boolean);
+    procedure SharrFilter(AddToOriginal: boolean);
+    procedure LaplaceFilter(AddToOriginal: boolean);
 
-    procedure EditContrast(k: double); // Усиление или уменьшение контраста
+    procedure EditContrast(k: double);
 
-    procedure HistogramEqualization; // Эквализация гистограммы
-    function Histogram: TBitmap; // Получение гистограммы
+    procedure HistogramEqualization;
+    function Histogram: TBitmap;
 
-    procedure LinearTransform(k, b: double); // Линейное преобразование
-    procedure LogTransform(c: double); // Логарифмическое преобразование
-    procedure GammaTransform(c, gamma: double); // Гамма-коррекция
+    procedure LinearTransform(k, b: double);
+    procedure LogTransform(c: double);
+    procedure GammaTransform(c, gamma: double);
 
-    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
-    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
-    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
+    procedure LoadFromBitMap(BM: TBitmap);
+    function SaveToBitMap: TBitmap;
+    procedure SaveToFile(FileName: string);
 
-    function ThresoldBinarization(Thresold: double): TCBinaryImage; // Пороговая бинаризация
-    function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage; // Пороговая бинаризация по диапазону
-    function BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage; // Бинаризация Бернсена
+    function ThresoldBinarization(Thresold: double): TCBinaryImage;
+    function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage;
+    function BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage;
   end;
 
 implementation
@@ -107,9 +107,9 @@ begin
     line := BM.ScanLine[i];
     for j := 0 to self.ImgWidth - 1 do
     begin
-      p.Red:=line[3 * j + 2] / 255;
-      p.Green:=line[3 * j + 1] / 255;
-      p.Blue:=line[3 * j + 0] / 255;
+      p.Red := line[3 * j + 2] / 255;
+      p.Green := line[3 * j + 1] / 255;
+      p.Blue := line[3 * j + 0] / 255;
       self.ImgPixels[i, j] := p.GetColorChannel(ccY);
     end;
   end;

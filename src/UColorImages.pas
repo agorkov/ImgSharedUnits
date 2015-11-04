@@ -6,63 +6,62 @@ uses
   VCL.Graphics, UPixelConvert, UGrayscaleImages;
 
 type
-  /// Цветное изображение
   TCColorImage = class
   private
-    ImgHeight: word; // Высота изображения
-    ImgWidth: word; // Ширина изображения
-    ImgPixels: array of array of TColorPixel; // Пиксели изображения
+    ImgHeight: word;
+    ImgWidth: word;
+    ImgPixels: array of array of TColorPixel;
 
-    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
-    function GetHeight: word; // Получить высоту изображения
+    procedure SetHeight(newHeight: word);
+    function GetHeight: word;
 
-    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
-    function GetWidth: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word);
+    function GetWidth: word;
 
-    procedure SetPixelValue(i, j: integer; value: TColorPixel); // Устанавливает значение заданного пиксела. Если запрашиваемые координаты за пределами изображения, устанавливается значение ближайшего пиксела
-    function GetPixelValue(i, j: integer): TColorPixel; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+    procedure SetPixelValue(i, j: integer; value: TColorPixel);
+    function GetPixelValue(i, j: integer): TColorPixel;
 
-    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
-    procedure FreePixels; // Освобождение пикселей изображения
+    procedure InitPixels;
+    procedure FreePixels;
   public
-    constructor Create; // Простой конструктор
-    constructor CreateAndLoadFromBitmap(BM: TBitmap); // Конструктор с автоматической загрузкой изображения из битовой карты
-    destructor FreeColorImage; // Стандартный деструктор
+    constructor Create;
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
+    destructor FreeColorImage;
 
-    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
-    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
-    property Pixels[row, col: integer]: TColorPixel read GetPixelValue write SetPixelValue; // Свойство для чтения и записи отдельных пикселей
+    property Height: word read GetHeight write SetHeight;
+    property Width: word read GetWidth write SetWidth;
+    property Pixels[row, col: integer]: TColorPixel read GetPixelValue write SetPixelValue;
 
-    function GetChanel(Channel: TEColorChannel): TCGrayscaleImage; // Считать заданный цветовой канал как монохромное изображение
-    procedure SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage); // Задать моохромное изображение как цветовой канал
+    function GetChanel(Channel: TEColorChannel): TCGrayscaleImage;
+    procedure SetChannel(Channel: TEColorChannel; GS: TCGrayscaleImage);
 
-    procedure AVGFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе среднегоарифметического
-    procedure WeightedAVGFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе взвешенной суммы
-    procedure GeometricMeanFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе среднего геометрического
-    procedure MedianFilter(Channel: TEColorChannel; h, w: word); // Медианный фильтр
-    procedure MaxFilter(Channel: TEColorChannel; h, w: word); // Фильтр максимума
-    procedure MinFilter(Channel: TEColorChannel; h, w: word); // Фильтр минимума
-    procedure MiddlePointFilter(Channel: TEColorChannel; h, w: word); // Фильтр на основе срединной точки
-    procedure TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word); // Фильтр усечённого среднего
-    procedure PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Превитт
-    procedure SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Собеля
-    procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Щарра
-    procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean); // Фильтр Лапласа
+    procedure AVGFilter(Channel: TEColorChannel; h, w: word);
+    procedure WeightedAVGFilter(Channel: TEColorChannel; h, w: word);
+    procedure GeometricMeanFilter(Channel: TEColorChannel; h, w: word);
+    procedure MedianFilter(Channel: TEColorChannel; h, w: word);
+    procedure MaxFilter(Channel: TEColorChannel; h, w: word);
+    procedure MinFilter(Channel: TEColorChannel; h, w: word);
+    procedure MiddlePointFilter(Channel: TEColorChannel; h, w: word);
+    procedure TruncatedAVGFilter(Channel: TEColorChannel; h, w, d: word);
+    procedure PrevittFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    procedure SobelFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    procedure SharrFilter(Channel: TEColorChannel; AddToOriginal: boolean);
+    procedure LaplaceFilter(Channel: TEColorChannel; AddToOriginal: boolean);
 
-    procedure LinearTransform(Channel: TEColorChannel; k, b: double); // Линейное преобразование
-    procedure LogTransform(Channel: TEColorChannel; c: double); // Логарифмическое преобразование
-    procedure GammaTransform(Channel: TEColorChannel; c, gamma: double); // Гамма-коррекция
+    procedure LinearTransform(Channel: TEColorChannel; k, b: double);
+    procedure LogTransform(Channel: TEColorChannel; c: double);
+    procedure GammaTransform(Channel: TEColorChannel; c, gamma: double);
     procedure EditContrast(Channel: TEColorChannel; k: double);
 
-    procedure HistogramEqualization(Channel: TEColorChannel); // Эквализация гистограммы
-    function Histogram(Channel: TEColorChannel): TBitmap; // Получение гистограммы
+    procedure HistogramEqualization(Channel: TEColorChannel);
+    function Histogram(Channel: TEColorChannel): TBitmap;
 
-    procedure LoadFromBitMap(BM: TBitmap); // Загрузка изображения из битовой карты
-    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
-    procedure LoadFromFile(FileName: string); // Загрузка изображения из файла
-    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
+    procedure LoadFromBitMap(BM: TBitmap);
+    function SaveToBitMap: TBitmap;
+    procedure LoadFromFile(FileName: string);
+    procedure SaveToFile(FileName: string);
 
-    function ConvertToGrayscale: TCGrayscaleImage; // Преобразование в монохромное изображение
+    function ConvertToGrayscale: TCGrayscaleImage;
   end;
 
 implementation

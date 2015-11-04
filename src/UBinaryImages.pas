@@ -6,40 +6,39 @@ uses
   VCL.Graphics;
 
 type
-  /// Бинарное изображение
   TCBinaryImage = class
   private
-    ImgHeight: word; // Высота изображения
-    ImgWidth: word; // Ширина изображения
-    ImgPixels: array of array of boolean; // Пиксели изображения
+    ImgHeight: word;
+    ImgWidth: word;
+    ImgPixels: array of array of boolean;
 
-    procedure SetHeight(newHeight: word); // Задать новую высоту изображения
-    function GetHeight: word; // Получить высоту изображения
+    procedure SetHeight(newHeight: word);
+    function GetHeight: word;
 
-    procedure SetWidth(newWidth: word); // Задать новую ширину изображения
-    function GetWidth: word; // Получить высоту изображения
+    procedure SetWidth(newWidth: word);
+    function GetWidth: word;
 
-    procedure SetPixelValue(i, j: integer; value: boolean); // Устанавливает значение заданного пиксела. Если запрашиваемые координаты за пределами изображения, устанавливается значение ближайшего пиксела
-    function GetPixelValue(i, j: integer): boolean; // Возвращает заданный пиксел изображения. Если запрашиваемые координаты за пределами изображения, возвращается значение ближайшего пиксела
+    procedure SetPixelValue(i, j: integer; value: boolean);
+    function GetPixelValue(i, j: integer): boolean;
 
-    procedure InitPixels; // Инициализация пикслей изображения нулевыми значениями
-    procedure FreePixels; // Освобождение пикселей изображения
+    procedure InitPixels;
+    procedure FreePixels;
 
     procedure Copy(From: TCBinaryImage);
   public
-    constructor Create; // Простой конструктор
+    constructor Create;
     constructor CreateCopy(From: TCBinaryImage);
-    destructor FreeBinaryImage; // Стандартный деструктор
+    destructor FreeBinaryImage;
 
-    function SaveToBitMap: TBitmap; // Сохранение изображения в виде битовой карты
+    function SaveToBitMap: TBitmap;
 
-    property Height: word read GetHeight write SetHeight; // Свойство для чтения и записи высоты изображения
-    property Width: word read GetWidth write SetWidth; // Свойство для чтения и записи ширины изображения
-    property Pixels[row, col: integer]: boolean read GetPixelValue write SetPixelValue; // Свойство для чтения и записи отдельных пикселей
+    property Height: word read GetHeight write SetHeight;
+    property Width: word read GetWidth write SetWidth;
+    property Pixels[row, col: integer]: boolean read GetPixelValue write SetPixelValue;
 
-    procedure Invert; // Инвертирует каждый пиксел монохромного изображения (без создания нового изображения)
+    procedure Invert;
 
-    procedure SaveToFile(FileName: string); // Сохранение изображения в файл
+    procedure SaveToFile(FileName: string);
 
     procedure dilatation(Mask: TCBinaryImage; MaskRow, MaskCol: word);
     procedure erosion(Mask: TCBinaryImage; MaskRow, MaskCol: word);

@@ -6,96 +6,78 @@ uses
   VCL.Graphics;
 
 type
-  /// Поддерживаемые цветовые пространства:
-  /// csFullColor - стандартный TColor
-  /// csRGB - аддитивный цветовой куб RGB
-  /// csCMYK - субтрактивное цветовое пространство (субстративный аналог RGB)
-  /// csHSI - пространство тон-насыщенность-интенсивность
-  /// csYIQ - цветоразностная модель
   TEColorSpace = (csFullColor, csRGB, csCMYK, csHSI, csYIQ);
 
-  /// Константы для каждого цветового канала:
-  /// ccRed - красный, ccGreen - зелёный, ccBlue - синий
-  /// ccCyan - голубой, ccMagenta - пурпурный, ccYellow - жёлтый, ccKeyColor - ключевой цвет (чёрный)
-  /// ccHue - тон, ccSaturation - насыщенность, ccIntensity - интенсивность
-  /// ccY - компонента интенсивности, ccI - цветоразностная компонента, ccQ - цветоразностная компонента
   TEColorChannel = (ccRed, ccGreen, ccBlue, ccCyan, ccMagenta, ccYellow, ccKeyColor, ccHue, ccSaturation, ccIntensity, ccY, ccI, ccQ);
 
-  /// Описание цвета. В зависимости от выбранной вариантной части, цвет представляется в одном из поддерживаемых цветовых пространств
   TRColorChannels = record
     case TEColorSpace of
-      csFullColor: // Стандартный TColor
+      csFullColor:
         (FullColor: TColor);
-      csRGB: // Аддитивный цветовой куб RGB
+      csRGB:
         (ccRed, ccGreen, ccBlue: double);
-      csCMYK: // Субтрактивное цветовое пространство (субстративный аналог RGB)
+      csCMYK:
         (ccCyan, ccMagenta, ccYellow, ccKeyColor: double);
-      csHSI: // Пространство тон-насыщенность-интенсивность
+      csHSI:
         (ccHue, ccSaturation, ccIntensity: double);
-      csYIQ: // Цветоразностная модель
+      csYIQ:
         (ccY, ccI, ccQ: double);
   end;
 
-  /// Пиксел цветного изображения
   TColorPixel = class
   private
-    ColorSpace: TEColorSpace; // Используемое цветовое пространство
+    ColorSpace: TEColorSpace;
     ColorChannels: TRColorChannels;
-    // Цвет, разделённый на каналы в соответствии с выбранным цветовым пространством
 
-    procedure RGBToFullColor; // Преобразование из пространства RGB в TColor
+    procedure RGBToFullColor;
     procedure FullColorToRGB;
-    // Преобразование из TColor в цветовое пространство RGB
 
     procedure RGBToCMYK;
-    // Преобразование из пространства RGB в пространство CMYK
     procedure CMYKToRGB;
-    // Преобразование из пространства CMYK в пространство RGB
 
-    procedure RGBToHSI; // Преобразование из пространства RGB в пространство HSI
-    procedure HSIToRGB; // Преобразование из пространства HSI в пространство RGB
+    procedure RGBToHSI;
+    procedure HSIToRGB;
 
-    procedure RGBToYIQ; // Преобразование из пространства RGB в пространство YIQ
-    procedure YIQToRGB; // Преобразование из пространства YIQ в пространство RGB
+    procedure RGBToYIQ;
+    procedure YIQToRGB;
 
     procedure ConvertTo(Target: TEColorSpace);
-    // Преобразование в указаное цветовое пространство
 
     procedure NormalizeChannels;
     function NormalizeValue(x: double): double;
 
-    procedure SetFullColor(Color: TColor); // Задать TColor
-    function GetFullColor: TColor; // Считать TColor
+    procedure SetFullColor(Color: TColor);
+    function GetFullColor: TColor;
 
-    procedure SetRed(red: double); // Задать красную составляющую
-    function GetRed: double; // Получить красную составляющую
-    procedure SetGreen(green: double); // Задать зелёную составляющую
-    function GetGreen: double; // Получить зелёную составляющую
-    procedure SetBlue(blue: double); // Задать синюю составляющую
-    function GetBlue: double; // Получить синюю составляющую
+    procedure SetRed(red: double);
+    function GetRed: double;
+    procedure SetGreen(green: double);
+    function GetGreen: double;
+    procedure SetBlue(blue: double);
+    function GetBlue: double;
 
-    procedure SetCyan(cyan: double); // Задать голубую составляющую
-    function GetCyan: double; // Получить голубую составляющую
-    procedure SetMagenta(magenta: double); // Задать пурпурную составляющую
-    function GetMagenta: double; // Получить пурпурную составляющую
-    procedure SetYellow(yellow: double); // Задать жёлтую составляющую
-    function GetYellow: double; // Получить жёлтую составляющую
-    procedure SetKeyColor(keyColor: double); // Задать ключевую (чёрную) составляющую
-    function GetKeyColor: double; // Получить ключевую (чёрную) составляющую
+    procedure SetCyan(cyan: double);
+    function GetCyan: double;
+    procedure SetMagenta(magenta: double);
+    function GetMagenta: double;
+    procedure SetYellow(yellow: double);
+    function GetYellow: double;
+    procedure SetKeyColor(keyColor: double);
+    function GetKeyColor: double;
 
-    procedure SetHue(hue: double); // Задать составляющую цветового тона
-    function GetHue: double; // Получить составляющую цветового тона
-    procedure SetSaturation(saturation: double); // Задать составляющую насыщенности
-    function GetSaturation: double; // Получить составляющую насыщенности
-    procedure SetIntensity(intensity: double); // Задать составляющую интенсивности
-    function GetIntensity: double; // Задать составляющую интенсивности
+    procedure SetHue(hue: double);
+    function GetHue: double;
+    procedure SetSaturation(saturation: double);
+    function GetSaturation: double;
+    procedure SetIntensity(intensity: double);
+    function GetIntensity: double;
 
-    procedure SetY(Y: double); // Задать Y составляющую
-    function GetY: double; // Получить Y составляющую
-    procedure SetI(I: double); // Задать I составляющую
-    function GetI: double; // Получить I составляющую
-    procedure SetQ(Q: double); // Задать Q составляющую
-    function GetQ: double; // Получить Q составляющую
+    procedure SetY(Y: double);
+    function GetY: double;
+    procedure SetI(I: double);
+    function GetI: double;
+    procedure SetQ(Q: double);
+    function GetQ: double;
   public
 
     property FullColor: TColor read GetFullColor write SetFullColor;
@@ -103,26 +85,26 @@ type
     property red: double read GetRed write SetRed;
     property green: double read GetGreen write SetGreen;
     property blue: double read GetBlue write SetBlue;
-    procedure SetRGB(R, G, B: double); // Задать все параметры RGB
+    procedure SetRGB(R, G, B: double);
 
     property cyan: double read GetCyan write SetCyan;
     property magenta: double read GetMagenta write SetMagenta;
     property yellow: double read GetYellow write SetYellow;
     property keyColor: double read GetKeyColor write SetKeyColor;
-    procedure SetCMYK(C, M, Y, K: double); // Задать все параметры CMYK
+    procedure SetCMYK(C, M, Y, K: double);
 
     property hue: double read GetHue write SetHue;
     property saturation: double read GetSaturation write SetSaturation;
     property intensity: double read GetIntensity write SetIntensity;
-    procedure SetHSI(H, S, I: double); // Задать все параметры HSI
+    procedure SetHSI(H, S, I: double);
 
     property Y: double read GetY write SetY;
     property I: double read GetI write SetI;
     property Q: double read GetQ write SetQ;
-    procedure SetYIQ(Y, I, Q: double); // Задать все параметры YIQ
+    procedure SetYIQ(Y, I, Q: double);
 
-    procedure SetColorChannel(Channel: TEColorChannel; value: double); // Задать значение указанного цветового канала
-    function GetColorChannel(Channel: TEColorChannel): double; // Получить значение указанного цветового канала
+    procedure SetColorChannel(Channel: TEColorChannel; value: double);
+    function GetColorChannel(Channel: TEColorChannel): double;
   end;
 
 implementation
@@ -315,42 +297,48 @@ begin
     self.ColorChannels.ccGreen := I - I * S;
     self.ColorChannels.ccBlue := I - I * S;
   end
-  else if (0 < H) and (H < 120) then
-  begin
-    self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
-    self.ColorChannels.ccGreen := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
-    self.ColorChannels.ccBlue := I - I * S;
-  end
-  else if (H = 120) then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I + 2 * I * S;
-    self.ColorChannels.ccBlue := I - I * S;
-  end
-  else if (120 < H) and (H < 240) then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
-    self.ColorChannels.ccBlue := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
-  end
-  else if H = 240 then
-  begin
-    self.ColorChannels.ccRed := I - I * S;
-    self.ColorChannels.ccGreen := I - I * S;
-    self.ColorChannels.ccBlue := I + 2 * I * S;
-  end
-  else if (240 < H) and (H < 360) then
-  begin
-    self.ColorChannels.ccRed := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
-    self.ColorChannels.ccGreen := I - I * S;
-    self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
-  end
-  else if H > 360 then
-  begin
-    self.ColorChannels.ccRed := I;
-    self.ColorChannels.ccGreen := I;
-    self.ColorChannels.ccBlue := I;
-  end;
+  else
+    if (0 < H) and (H < 120) then
+    begin
+      self.ColorChannels.ccRed := I + I * S * cos(DegToRad(H)) / cos(DegToRad(60 - H));
+      self.ColorChannels.ccGreen := I + I * S * (1 - cos(DegToRad(H)) / cos(DegToRad(60 - H)));
+      self.ColorChannels.ccBlue := I - I * S;
+    end
+    else
+      if (H = 120) then
+      begin
+        self.ColorChannels.ccRed := I - I * S;
+        self.ColorChannels.ccGreen := I + 2 * I * S;
+        self.ColorChannels.ccBlue := I - I * S;
+      end
+      else
+        if (120 < H) and (H < 240) then
+        begin
+          self.ColorChannels.ccRed := I - I * S;
+          self.ColorChannels.ccGreen := I + I * S * cos(DegToRad(H - 120)) / cos(DegToRad(180 - H));
+          self.ColorChannels.ccBlue := I + I * S * (1 - cos(DegToRad(H - 120)) / cos(DegToRad(180 - H)));
+        end
+        else
+          if H = 240 then
+          begin
+            self.ColorChannels.ccRed := I - I * S;
+            self.ColorChannels.ccGreen := I - I * S;
+            self.ColorChannels.ccBlue := I + 2 * I * S;
+          end
+          else
+            if (240 < H) and (H < 360) then
+            begin
+              self.ColorChannels.ccRed := I + I * S * (1 - cos(DegToRad(H - 240)) / cos(DegToRad(300 - H)));
+              self.ColorChannels.ccGreen := I - I * S;
+              self.ColorChannels.ccBlue := I + I * S * cos(DegToRad(H - 240)) / cos(DegToRad(300 - H));
+            end
+            else
+              if H > 360 then
+              begin
+                self.ColorChannels.ccRed := I;
+                self.ColorChannels.ccGreen := I;
+                self.ColorChannels.ccBlue := I;
+              end;
   self.ColorSpace := csRGB;
 end;
 

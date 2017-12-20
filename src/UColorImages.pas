@@ -3,7 +3,7 @@ unit UColorImages;
 interface
 
 uses
-  VCL.Graphics, UPixelConvert, UGrayscaleImages;
+  Graphics, UPixelConvert, UGrayscaleImages;
 
 type
   TCColorImage = class

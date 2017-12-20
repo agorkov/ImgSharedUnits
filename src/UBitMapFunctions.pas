@@ -3,7 +3,7 @@ unit UBitMapFunctions;
 interface
 
 uses
-  SysUtils, VCL.Graphics;
+  SysUtils, Graphics;
 
 const
   SUPPORTED_FORMATS = '*.bmp;*.jpg;*.jpeg;*.png';

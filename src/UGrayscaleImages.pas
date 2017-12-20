@@ -3,7 +3,7 @@ unit UGrayscaleImages;
 interface
 
 uses
-  VCL.Graphics, UBinaryImages;
+  Graphics, UBinaryImages;
 
 type
 

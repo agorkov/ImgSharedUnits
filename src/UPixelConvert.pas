@@ -3,7 +3,7 @@ unit UPixelConvert;
 interface
 
 uses
-  VCL.Graphics;
+  Graphics;
 
 type
   TEColorSpace = (csFullColor, csRGB, csCMYK, csHSI, csYIQ);
@@ -110,7 +110,7 @@ type
 implementation
 
 uses
-  Winapi.Windows, Math;
+  Windows, Math;
 
 procedure TColorPixel.NormalizeChannels;
 begin
@@ -199,7 +199,7 @@ end;
 
 procedure TColorPixel.RGBToFullColor;
 begin
-  self.ColorChannels.FullColor := Winapi.Windows.RGB(round(self.ColorChannels.ccRed * 255), round(self.ColorChannels.ccGreen * 255), round(self.ColorChannels.ccBlue * 255));
+  self.ColorChannels.FullColor := Windows.RGB(round(self.ColorChannels.ccRed * 255), round(self.ColorChannels.ccGreen * 255), round(self.ColorChannels.ccBlue * 255));
   self.ColorSpace := csFullColor;
 end;
 

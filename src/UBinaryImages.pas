@@ -3,7 +3,7 @@ unit UBinaryImages;
 interface
 
 uses
-  VCL.Graphics;
+  Graphics;
 
 type
   TCBinaryImage = class

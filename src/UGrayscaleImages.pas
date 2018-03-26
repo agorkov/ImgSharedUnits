@@ -5,9 +5,11 @@ interface
 uses
   Graphics, UBinaryImages;
 
-type
+const
+  HistLength = 255;
 
-  tH = array [0 .. 255] of integer;
+type
+  tH = array [0 .. HistLength] of integer;
 
   TCGrayscaleImage = class
   private
@@ -727,44 +729,36 @@ begin
 end;
 
 procedure TCGrayscaleImage.HistogramEqualization;
-const
-  k = 255;
 var
-  h : array [0 .. k] of double;
+  h : array [0 .. HistLength] of double;
   i, j : word;
 begin
-  for i := 0 to k do
+  for i := 0 to HistLength do
     h[i] := 0;
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      h[round(k * self.ImgPixels[i, j])] := h[round(k * self.ImgPixels[i, j])] + 1;
-  for i := 0 to k do
+      h[round(HistLength * self.ImgPixels[i, j])] := h[round(HistLength * self.ImgPixels[i, j])] + 1;
+  for i := 0 to HistLength do
     h[i] := h[i] / (self.ImgHeight * self.ImgWidth);
 
-  for i := 1 to k do
+  for i := 1 to HistLength do
     h[i] := h[i - 1] + h[i];
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
-      self.ImgPixels[i, j] := h[round(k * self.ImgPixels[i, j])];
+      self.ImgPixels[i, j] := h[round(HistLength * self.ImgPixels[i, j])];
 end;
 
 function TCGrayscaleImage.Histogram : TBitmap;
-const
-  k = 255;
 var
   BM : TBitmap;
-  h : array [0 .. k] of LongWord;
+  h : tH;
   Max : LongWord;
   i, j : word;
 begin
   Max := 0;
-  for i := 0 to k do
-    h[i] := 0;
-  for i := 0 to self.ImgHeight - 1 do
-    for j := 0 to self.ImgWidth - 1 do
-      h[round(k * self.ImgPixels[i, j])] := h[round(k * self.ImgPixels[i, j])] + 1;
+  H := self.HistogramVal;
 
-  for i := 0 to k do
+  for i := 0 to HistLength do
     if h[i] > Max then
       Max := h[i];
 
@@ -775,7 +769,7 @@ begin
   BM.Canvas.Brush.Color := clGray;
   BM.Canvas.Brush.Style := bsSolid;
 
-  for i := 0 to k do
+  for i := 0 to HistLength do
   begin
     BM.Canvas.MoveTo(i, BM.Height);
     BM.Canvas.LineTo(i, BM.Height - round(h[i] * 100 / Max));
@@ -787,10 +781,8 @@ function TCGrayscaleImage.HistogramVal : tH;
 var
   BM : TBitmap;
   h : tH;
-  Max : LongWord;
   i, j : word;
 begin
-  Max := 0;
   for i := 0 to 255 do
     h[i] := 0;
   for i := 0 to self.ImgHeight - 1 do

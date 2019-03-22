@@ -3,92 +3,82 @@ unit UGrayscaleImages;
 interface
 
 uses
-  Graphics, UBinaryImages;
+  Graphics,
+  UBinaryImages;
 
 const
   HistLength = 255;
 
 type
-  tH = array [0 .. HistLength] of integer;
+  tH = array[0..HistLength] of integer;
 
   TCGrayscaleImage = class
   private
-    ImgHeight : word;
-    ImgWidth : word;
-    ImgPixels : array of array of double;
-
-    procedure SetHeight(newHeight : word);
-    function GetHeight : word;
-
-    procedure SetWidth(newWidth : word);
-    function GetWidth : word;
-
-    procedure SetPixelValue(i, j : integer; value : double);
-    function GetPixelValue(i, j : integer) : double;
-
+    ImgHeight: word;
+    ImgWidth: word;
+    ImgPixels: array of array of double;
+    procedure SetHeight(newHeight: word);
+    function GetHeight: word;
+    procedure SetWidth(newWidth: word);
+    function GetWidth: word;
+    procedure SetPixelValue(i, j: integer; value: double);
+    function GetPixelValue(i, j: integer): double;
     procedure InitPixels;
     procedure FreePixels;
-
-    constructor CreateCopy(From : TCGrayscaleImage);
-
-    procedure Copy(From : TCGrayscaleImage);
+    constructor CreateCopy(From: TCGrayscaleImage);
+    procedure Copy(From: TCGrayscaleImage);
   public
     constructor Create;
-    constructor CreateAndLoadFromBitmap(BM : TBitmap);
+    constructor CreateAndLoadFromBitmap(BM: TBitmap);
     destructor FreeGrayscaleImage;
-
-    property Height : word read GetHeight write SetHeight;
-    property Width : word read GetWidth write SetWidth;
-    property Pixels[row, col : integer] : double read GetPixelValue write SetPixelValue;
-
-    procedure AVGFilter(h, w : word);
-    procedure WeightedAVGFilter(h, w : word);
-    procedure GeometricMeanFilter(h, w : word);
-    procedure MedianFilter(h, w : word);
-    procedure MaxFilter(h, w : word);
-    procedure MinFilter(h, w : word);
-    procedure MiddlePointFilter(h, w : word);
-    procedure TruncatedAVGFilter(h, w, d : word);
-    procedure PrevittFilter(AddToOriginal : boolean);
-    procedure SobelFilter(AddToOriginal : boolean);
-    procedure SharrFilter(AddToOriginal : boolean);
-    procedure LaplaceFilter(AddToOriginal : boolean);
-
-    procedure EditContrast(k : double);
-
+    property Height: word read GetHeight write SetHeight;
+    property Width: word read GetWidth write SetWidth;
+    property Pixels[row, col: integer]: double read GetPixelValue write SetPixelValue;
+    procedure AVGFilter(h, w: word);
+    procedure WeightedAVGFilter(h, w: word);
+    procedure GeometricMeanFilter(h, w: word);
+    procedure MedianFilter(h, w: word);
+    procedure MaxFilter(h, w: word);
+    procedure MinFilter(h, w: word);
+    procedure MiddlePointFilter(h, w: word);
+    procedure TruncatedAVGFilter(h, w, d: word);
+    procedure PrevittFilter(AddToOriginal: boolean);
+    procedure SobelFilter(AddToOriginal: boolean);
+    procedure SharrFilter(AddToOriginal: boolean);
+    procedure LaplaceFilter(AddToOriginal: boolean);
+    procedure EditContrast(k: double);
     procedure HistogramEqualization;
-    function Histogram : TBitmap;
-    function HistogramVal : tH;
-
-    procedure LinearTransform(k, b : double);
-    procedure LogTransform(c : double);
-    procedure GammaTransform(c, gamma : double);
-
-    procedure LoadFromBitMap(BM : TBitmap);
-    function SaveToBitMap : TBitmap;
-    procedure SaveToFile(FileName : string);
-
-    function ThresoldBinarization(Thresold : double) : TCBinaryImage;
-    function ThresoldInervalBinarization(Thresold1, Thresold2 : double) : TCBinaryImage;
-    function BernsenBinarization(r : word; ContrastThresold : double) : TCBinaryImage;
+    function Histogram: TBitmap;
+    function HistogramVal: tH;
+    procedure LinearTransform(k, b: double);
+    procedure LogTransform(c: double);
+    procedure GammaTransform(c, gamma: double);
+    procedure LoadFromBitMap(BM: TBitmap);
+    function SaveToBitMap: TBitmap;
+    procedure SaveToFile(FileName: string);
+    function ThresoldBinarization(Thresold: double): TCBinaryImage;
+    function ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage;
+    function BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage;
+    function FloydSteinbergDithering: TCBinaryImage;
   end;
 
 implementation
 
 uses
-  Math, SysUtils, UPixelConvert, UColorImages, UBitmapFunctions;
+  Math,
+  SysUtils,
+  UPixelConvert,
+  UColorImages,
+  UBitMapFunctions;
 
 const
-  LaplaceMask : array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
-
-  SobelMaskX : array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-2, 0, 2), (-1, 0, 1));
-  SobelMaskY : array [1 .. 3, 1 .. 3] of shortint = ((1, 2, 1), (0, 0, 0), (-1, -2, -1));
-
-  PrevittMaskX : array [1 .. 3, 1 .. 3] of shortint = ((-1, 0, 1), (-1, 0, 1), (-1, 0, 1));
-  PrevittMaskY : array [1 .. 3, 1 .. 3] of shortint = ((1, 1, 1), (0, 0, 0), (-1, -1, -1));
-
-  SharrMaskX : array [1 .. 3, 1 .. 3] of shortint = ((-3, 0, 3), (-10, 0, 10), (-3, 0, 3));
-  SharrMaskY : array [1 .. 3, 1 .. 3] of shortint = ((3, 10, 3), (0, 0, 0), (-3, -10, -3));
+  LaplaceMask: array[1..3, 1..3] of shortint = ((1, 1, 1), (1, -8, 1), (1, 1, 1));
+  SobelMaskX: array[1..3, 1..3] of shortint = ((-1, 0, 1), (-2, 0, 2), (-1, 0, 1));
+  SobelMaskY: array[1..3, 1..3] of shortint = ((1, 2, 1), (0, 0, 0), (-1, -2, -1));
+  PrevittMaskX: array[1..3, 1..3] of shortint = ((-1, 0, 1), (-1, 0, 1), (-1, 0, 1));
+  PrevittMaskY: array[1..3, 1..3] of shortint = ((1, 1, 1), (0, 0, 0), (-1, -1, -1));
+  SharrMaskX: array[1..3, 1..3] of shortint = ((-3, 0, 3), (-10, 0, 10), (-3, 0, 3));
+  SharrMaskY: array[1..3, 1..3] of shortint = ((3, 10, 3), (0, 0, 0), (-3, -10, -3));
 
 constructor TCGrayscaleImage.Create;
 begin
@@ -97,11 +87,11 @@ begin
   self.ImgWidth := 0;
 end;
 
-procedure TCGrayscaleImage.LoadFromBitMap(BM : TBitmap);
+procedure TCGrayscaleImage.LoadFromBitMap(BM: TBitmap);
 var
-  i, j : word;
-  p : TColorPixel;
-  line : pByteArray;
+  i, j: word;
+  p: TColorPixel;
+  line: pByteArray;
 begin
   BM.PixelFormat := pf24bit;
   p := TColorPixel.Create;
@@ -121,7 +111,7 @@ begin
   p.Free;
 end;
 
-constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM : TBitmap);
+constructor TCGrayscaleImage.CreateAndLoadFromBitmap(BM: TBitmap);
 begin
   inherited;
   self.ImgHeight := 0;
@@ -129,9 +119,9 @@ begin
   self.LoadFromBitMap(BM);
 end;
 
-constructor TCGrayscaleImage.CreateCopy(From : TCGrayscaleImage);
+constructor TCGrayscaleImage.CreateCopy(From: TCGrayscaleImage);
 var
-  i, j : word;
+  i, j: word;
 begin
   inherited;
   self.SetHeight(From.GetHeight);
@@ -149,7 +139,7 @@ end;
 
 procedure TCGrayscaleImage.FreePixels;
 var
-  i : word;
+  i: word;
 begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
@@ -167,7 +157,7 @@ end;
 
 procedure TCGrayscaleImage.InitPixels;
 var
-  i, j : word;
+  i, j: word;
 begin
   if (self.ImgHeight > 0) and (self.ImgWidth > 0) then
   begin
@@ -181,31 +171,31 @@ begin
   end;
 end;
 
-procedure TCGrayscaleImage.SetHeight(newHeight : word);
+procedure TCGrayscaleImage.SetHeight(newHeight: word);
 begin
   FreePixels;
   self.ImgHeight := newHeight;
   self.InitPixels;
 end;
 
-function TCGrayscaleImage.GetHeight : word;
+function TCGrayscaleImage.GetHeight: word;
 begin
   GetHeight := self.ImgHeight;
 end;
 
-procedure TCGrayscaleImage.SetWidth(newWidth : word);
+procedure TCGrayscaleImage.SetWidth(newWidth: word);
 begin
   FreePixels;
   self.ImgWidth := newWidth;
   self.InitPixels;
 end;
 
-function TCGrayscaleImage.GetWidth : word;
+function TCGrayscaleImage.GetWidth: word;
 begin
   GetWidth := self.ImgWidth;
 end;
 
-function TCGrayscaleImage.GetPixelValue(i, j : integer) : double;
+function TCGrayscaleImage.GetPixelValue(i, j: integer): double;
 begin
   if i < 0 then
     i := 0;
@@ -218,7 +208,7 @@ begin
   GetPixelValue := self.ImgPixels[i, j];
 end;
 
-procedure TCGrayscaleImage.SetPixelValue(i, j : integer; value : double);
+procedure TCGrayscaleImage.SetPixelValue(i, j: integer; value: double);
 begin
   if i < 0 then
     i := 0;
@@ -231,9 +221,9 @@ begin
   ImgPixels[i, j] := value;
 end;
 
-procedure TCGrayscaleImage.Copy(From : TCGrayscaleImage);
+procedure TCGrayscaleImage.Copy(From: TCGrayscaleImage);
 var
-  i, j : word;
+  i, j: word;
 begin
   if (self.ImgHeight <> From.ImgHeight) or (self.ImgWidth <> From.ImgWidth) then
   begin
@@ -245,12 +235,12 @@ begin
       self.ImgPixels[i, j] := From.ImgPixels[i, j];
 end;
 
-procedure TCGrayscaleImage.AVGFilter(h, w : word);
+procedure TCGrayscaleImage.AVGFilter(h, w: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  sum : double;
-  GSIR : TCGrayscaleImage;
+  i, j: word;
+  fi, fj: integer;
+  sum: double;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   for i := 0 to self.ImgHeight - 1 do
@@ -267,14 +257,14 @@ begin
   GSIR.Free;
 end;
 
-procedure TCGrayscaleImage.WeightedAVGFilter(h, w : word);
+procedure TCGrayscaleImage.WeightedAVGFilter(h, w: word);
 var
-  i, j : integer;
-  fi, fj : integer;
-  sum : double;
-  GSIR : TCGrayscaleImage;
-  Mask : array of array of double;
-  maxDist, maskWeigth : double;
+  i, j: integer;
+  fi, fj: integer;
+  sum: double;
+  GSIR: TCGrayscaleImage;
+  Mask: array of array of double;
+  maxDist, maskWeigth: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(Mask, 2 * h + 2);
@@ -309,12 +299,12 @@ begin
   Mask := nil;
 end;
 
-procedure TCGrayscaleImage.GeometricMeanFilter(h, w : word);
+procedure TCGrayscaleImage.GeometricMeanFilter(h, w: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  p : extended;
-  GSIR : TCGrayscaleImage;
+  i, j: word;
+  fi, fj: integer;
+  p: extended;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
@@ -333,11 +323,12 @@ begin
   GSIR.Free;
 end;
 
-procedure TCGrayscaleImage.MedianFilter(h, w : word);
-  function FindMedian(N : word; var Arr : array of double) : double;
+procedure TCGrayscaleImage.MedianFilter(h, w: word);
+
+  function FindMedian(N: word; var Arr: array of double): double;
   var
-    L, r, k, i, j : word;
-    w, x : double;
+    L, r, k, i, j: word;
+    w, x: double;
   begin
     L := 1;
     r := N;
@@ -370,11 +361,11 @@ procedure TCGrayscaleImage.MedianFilter(h, w : word);
   end;
 
 var
-  i, j : word;
-  fi, fj : integer;
-  GSIR : TCGrayscaleImage;
-  k : word;
-  tmp : array of double;
+  i, j: word;
+  fi, fj: integer;
+  GSIR: TCGrayscaleImage;
+  k: word;
+  tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
@@ -400,14 +391,14 @@ begin
   tmp := nil;
 end;
 
-procedure TCGrayscaleImage.MaxFilter(h, w : word);
+procedure TCGrayscaleImage.MaxFilter(h, w: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  GSIR : TCGrayscaleImage;
-  k : word;
-  Max : double;
-  tmp : array of double;
+  i, j: word;
+  fi, fj: integer;
+  GSIR: TCGrayscaleImage;
+  k: word;
+  Max: double;
+  tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
@@ -437,14 +428,14 @@ begin
   tmp := nil;
 end;
 
-procedure TCGrayscaleImage.MinFilter(h, w : word);
+procedure TCGrayscaleImage.MinFilter(h, w: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  GSIR : TCGrayscaleImage;
-  k : word;
-  Min : double;
-  tmp : array of double;
+  i, j: word;
+  fi, fj: integer;
+  GSIR: TCGrayscaleImage;
+  k: word;
+  Min: double;
+  tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
@@ -474,14 +465,14 @@ begin
   tmp := nil;
 end;
 
-procedure TCGrayscaleImage.MiddlePointFilter(h, w : word);
+procedure TCGrayscaleImage.MiddlePointFilter(h, w: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  GSIR : TCGrayscaleImage;
-  k : word;
-  Min, Max : double;
-  tmp : array of double;
+  i, j: word;
+  fi, fj: integer;
+  GSIR: TCGrayscaleImage;
+  k: word;
+  Min, Max: double;
+  tmp: array of double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
@@ -516,15 +507,15 @@ begin
   tmp := nil;
 end;
 
-procedure TCGrayscaleImage.TruncatedAVGFilter(h, w, d : word);
+procedure TCGrayscaleImage.TruncatedAVGFilter(h, w, d: word);
 var
-  i, j : word;
-  fi, fj : integer;
-  GSIR : TCGrayscaleImage;
-  k, L : word;
-  val : double;
-  tmp : array of double;
-  sum : double;
+  i, j: word;
+  fi, fj: integer;
+  GSIR: TCGrayscaleImage;
+  k, L: word;
+  val: double;
+  tmp: array of double;
+  sum: double;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
   SetLength(tmp, (2 * h + 1) * (2 * w + 1) + 1);
@@ -561,12 +552,12 @@ begin
   tmp := nil;
 end;
 
-procedure TCGrayscaleImage.PrevittFilter(AddToOriginal : boolean);
+procedure TCGrayscaleImage.PrevittFilter(AddToOriginal: boolean);
 var
-  i, j : integer;
-  fi, fj : integer;
-  response : double;
-  GSIR : TCGrayscaleImage;
+  i, j: integer;
+  fi, fj: integer;
+  response: double;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
@@ -590,12 +581,12 @@ begin
   GSIR.FreeGrayscaleImage;
 end;
 
-procedure TCGrayscaleImage.SobelFilter(AddToOriginal : boolean);
+procedure TCGrayscaleImage.SobelFilter(AddToOriginal: boolean);
 var
-  i, j : integer;
-  fi, fj : integer;
-  response : double;
-  GSIR : TCGrayscaleImage;
+  i, j: integer;
+  fi, fj: integer;
+  response: double;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
@@ -619,12 +610,12 @@ begin
   GSIR.FreeGrayscaleImage;
 end;
 
-procedure TCGrayscaleImage.SharrFilter(AddToOriginal : boolean);
+procedure TCGrayscaleImage.SharrFilter(AddToOriginal: boolean);
 var
-  i, j : integer;
-  fi, fj : integer;
-  response : double;
-  GSIR : TCGrayscaleImage;
+  i, j: integer;
+  fi, fj: integer;
+  response: double;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
@@ -648,12 +639,12 @@ begin
   GSIR.FreeGrayscaleImage;
 end;
 
-procedure TCGrayscaleImage.LaplaceFilter(AddToOriginal : boolean);
+procedure TCGrayscaleImage.LaplaceFilter(AddToOriginal: boolean);
 var
-  i, j : integer;
-  fi, fj : integer;
-  response : double;
-  GSIR : TCGrayscaleImage;
+  i, j: integer;
+  fi, fj: integer;
+  response: double;
+  GSIR: TCGrayscaleImage;
 begin
   GSIR := TCGrayscaleImage.CreateCopy(self);
 
@@ -677,10 +668,10 @@ begin
   GSIR.FreeGrayscaleImage;
 end;
 
-procedure TCGrayscaleImage.LinearTransform(k, b : double);
+procedure TCGrayscaleImage.LinearTransform(k, b: double);
 var
-  i, j : word;
-  val : double;
+  i, j: word;
+  val: double;
 begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -694,10 +685,10 @@ begin
     end;
 end;
 
-procedure TCGrayscaleImage.LogTransform(c : double);
+procedure TCGrayscaleImage.LogTransform(c: double);
 var
-  i, j : word;
-  val : double;
+  i, j: word;
+  val: double;
 begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -711,10 +702,10 @@ begin
     end;
 end;
 
-procedure TCGrayscaleImage.GammaTransform(c, gamma : double);
+procedure TCGrayscaleImage.GammaTransform(c, gamma: double);
 var
-  i, j : word;
-  val : double;
+  i, j: word;
+  val: double;
 begin
   for i := 0 to self.ImgHeight - 1 do
     for j := 0 to self.ImgWidth - 1 do
@@ -730,8 +721,8 @@ end;
 
 procedure TCGrayscaleImage.HistogramEqualization;
 var
-  h : array [0 .. HistLength] of double;
-  i, j : word;
+  h: array[0..HistLength] of double;
+  i, j: word;
 begin
   for i := 0 to HistLength do
     h[i] := 0;
@@ -748,15 +739,15 @@ begin
       self.ImgPixels[i, j] := h[round(HistLength * self.ImgPixels[i, j])];
 end;
 
-function TCGrayscaleImage.Histogram : TBitmap;
+function TCGrayscaleImage.Histogram: TBitmap;
 var
-  BM : TBitmap;
-  h : tH;
-  Max : LongWord;
-  i, j : word;
+  BM: TBitmap;
+  h: tH;
+  Max: LongWord;
+  i, j: word;
 begin
   Max := 0;
-  H := self.HistogramVal;
+  h := self.HistogramVal;
 
   for i := 0 to HistLength do
     if h[i] > Max then
@@ -777,11 +768,11 @@ begin
   Histogram := BM;
 end;
 
-function TCGrayscaleImage.HistogramVal : tH;
+function TCGrayscaleImage.HistogramVal: tH;
 var
-  BM : TBitmap;
-  h : tH;
-  i, j : word;
+  BM: TBitmap;
+  h: tH;
+  i, j: word;
 begin
   for i := 0 to 255 do
     h[i] := 0;
@@ -792,12 +783,12 @@ begin
   HistogramVal := h;
 end;
 
-function TCGrayscaleImage.SaveToBitMap : TBitmap;
+function TCGrayscaleImage.SaveToBitMap: TBitmap;
 var
-  i, j : word;
-  BM : TBitmap;
-  p : TColorPixel;
-  line : pByteArray;
+  i, j: word;
+  BM: TBitmap;
+  p: TColorPixel;
+  line: pByteArray;
 begin
   p := TColorPixel.Create;
   BM := TBitmap.Create;
@@ -819,19 +810,19 @@ begin
   p.Free;
 end;
 
-procedure TCGrayscaleImage.SaveToFile(FileName : string);
+procedure TCGrayscaleImage.SaveToFile(FileName: string);
 var
-  BM : TBitmap;
+  BM: TBitmap;
 begin
   BM := self.SaveToBitMap;
-  UBitmapFunctions.SaveToFile(BM, FileName);
+  UBitMapFunctions.SaveToFile(BM, FileName);
   BM.Free;
 end;
 
-function TCGrayscaleImage.ThresoldBinarization(Thresold : double) : TCBinaryImage;
+function TCGrayscaleImage.ThresoldBinarization(Thresold: double): TCBinaryImage;
 var
-  BI : TCBinaryImage;
-  i, j : word;
+  BI: TCBinaryImage;
+  i, j: word;
 begin
   BI := TCBinaryImage.Create;
   BI.Height := self.ImgHeight;
@@ -845,10 +836,10 @@ begin
   ThresoldBinarization := BI;
 end;
 
-function TCGrayscaleImage.ThresoldInervalBinarization(Thresold1, Thresold2 : double) : TCBinaryImage;
+function TCGrayscaleImage.ThresoldInervalBinarization(Thresold1, Thresold2: double): TCBinaryImage;
 var
-  BI : TCBinaryImage;
-  i, j : word;
+  BI: TCBinaryImage;
+  i, j: word;
 begin
   BI := TCBinaryImage.Create;
   BI.Height := self.ImgHeight;
@@ -862,11 +853,11 @@ begin
   ThresoldInervalBinarization := BI;
 end;
 
-function TCGrayscaleImage.BernsenBinarization(r : word; ContrastThresold : double) : TCBinaryImage;
+function TCGrayscaleImage.BernsenBinarization(r: word; ContrastThresold: double): TCBinaryImage;
 var
-  BI : TCBinaryImage;
-  i, j, internali, internalj : word;
-  Imin, Imax, IAvg, localContrast : double;
+  BI: TCBinaryImage;
+  i, j, internali, internalj: word;
+  Imin, Imax, IAvg, localContrast: double;
 begin
   BI := TCBinaryImage.Create;
   BI.Height := self.ImgHeight;
@@ -894,12 +885,57 @@ begin
   BernsenBinarization := BI;
 end;
 
-procedure TCGrayscaleImage.EditContrast(k : double);
+function TCGrayscaleImage.FloydSteinbergDithering: TCBinaryImage;
 var
-  avg : double;
-  delta, temp : double;
-  i, j : word;
-  b : array [0 .. 255] of double;
+  BI: TCBinaryImage;
+  Err: array of array of Double;
+  d: Double;
+  i, j: Integer;
+begin
+
+  SetLength(Err, self.Height);
+  for i := 0 to self.Height - 1 do
+    SetLength(Err[i], self.Width);
+
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+      Err[i, j] := 0;
+
+  BI := TCBinaryImage.Create;
+  BI.Height := self.Height;
+  BI.Width := self.Width;
+  for i := 0 to self.Height - 1 do
+    for j := 0 to self.Width - 1 do
+    begin
+      if self.Pixels[i, j] + Err[i, j] > 0.5 then
+      begin
+        BI.Pixels[i, j] := False;
+        d := -(1 - self.Pixels[i, j]);
+      end
+      else
+      begin
+        BI.Pixels[i, j] := True;
+        d := self.Pixels[i, j]
+      end;
+      if j + 1 <= self.Width - 1 then
+        Err[i, j + 1] := 7 * d / 16;
+      if (i + 1 <= self.Height - 1) and (j - 1 >= 0) then
+        Err[i + 1, j - 1] := 3 * d / 16;
+      if (i + 1 <= self.Height - 1) then
+        Err[i + 1, j] := 5 * d / 16;
+      if (i + 1 <= self.Height - 1) and (j + 1 <= self.Width - 1) then
+        Err[i + 1, j + 1] := 1 * d / 16;
+
+    end;
+  FloydSteinbergDithering := BI;
+end;
+
+procedure TCGrayscaleImage.EditContrast(k: double);
+var
+  avg: double;
+  delta, temp: double;
+  i, j: word;
+  b: array[0..255] of double;
 begin
   avg := 0;
   for i := 0 to self.ImgHeight - 1 do
@@ -908,7 +944,7 @@ begin
   avg := round(avg / (self.ImgHeight * self.ImgWidth) * 255);
 
   for i := 0 to 255 do
-  Begin
+  begin
     delta := i - avg;
     temp := avg + k * delta;
 
@@ -927,4 +963,5 @@ begin
 end;
 
 end.
+
 
